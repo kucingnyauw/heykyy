@@ -1,0 +1,336 @@
+ {/* Features Section */}
+      <Container maxWidth="lg" sx={{ py: 12 }}>
+        <Box sx={{ textAlign: 'center', mb: 8 }}>
+          <Typography variant="h2" sx={{ mb: 2, fontWeight: 700 }}>
+            Why Choose Webtrix?
+          </Typography>
+          <Typography variant="body1" sx={{ color: theme.palette.text.secondary, maxWidth: 600, mx: 'auto' }}>
+            Built with cutting-edge technology and user experience in mind
+          </Typography>
+        </Box>
+        
+        <Grid container spacing={4}>
+          {features.map((feature, index) => (
+            <Grid item xs={12} sm={6} md={3} key={index}>
+              <Card
+                sx={{
+                  height: '100%',
+                  border: `1px solid ${theme.palette.divider}`,
+                  background: theme.palette.background.paper,
+                  borderRadius: 3,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    borderColor: theme.palette.primary.main,
+                    boxShadow: `0 20px 40px ${alpha(theme.palette.primary.main, 0.1)}`,
+                  }
+                }}
+              >
+                <CardContent sx={{ p: 3 }}>
+                  <Box
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mb: 3,
+                      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, transparent 100%)`,
+                      color: theme.palette.primary.main,
+                    }}
+                  >
+                    {React.cloneElement(feature.icon, { size: 28 })}
+                  </Box>
+                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                    {feature.title}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    {feature.desc}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+
+      {/* Testimonials Section */}
+      <Box sx={{ py: 12, background: alpha(theme.palette.background.default, 0.5) }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 8 }}>
+            <Typography variant="h2" sx={{ mb: 2, fontWeight: 700 }}>
+              Trusted by Innovators
+            </Typography>
+            <Typography variant="body1" sx={{ color: theme.palette.text.secondary, maxWidth: 600, mx: 'auto' }}>
+              Join thousands of users who trust Webtrix with their digital assets
+            </Typography>
+          </Box>
+          
+          <Grid container spacing={4}>
+            {testimonials.map((testimonial, index) => (
+              <Grid item xs={12} md={4} key={index}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    border: `1px solid ${theme.palette.divider}`,
+                    background: theme.palette.background.paper,
+                    borderRadius: 3,
+                    p: 3,
+                  }}
+                >
+                  <Stack spacing={3}>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                      <Box
+                        sx={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          bgcolor: alpha(theme.palette.primary.main, 0.1),
+                          color: theme.palette.primary.main,
+                          fontWeight: 600,
+                        }}
+                      >
+                        {testimonial.avatar}
+                      </Box>
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={600}>
+                          {testimonial.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {testimonial.role}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                    
+                    <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+                      "{testimonial.text}"
+                    </Typography>
+                    
+                    <Stack direction="row" spacing={0.5}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star key={star} size={16} fill={theme.palette.warning.main} color={theme.palette.warning.main} />
+                      ))}
+                    </Stack>
+                  </Stack>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* CTA Section */}
+      <Container maxWidth="md" sx={{ py: 12 }}>
+        <Card
+          sx={{
+            textAlign: 'center',
+            border: `1px solid ${theme.palette.divider}`,
+            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, transparent 100%)`,
+            borderRadius: 4,
+            p: 6,
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '4px',
+              background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+            }
+          }}
+        >
+          <Typography variant="h2" sx={{ mb: 3, fontWeight: 700 }}>
+            Ready to Start Your Web3 Journey?
+          </Typography>
+          
+          <Typography variant="body1" sx={{ mb: 5, color: theme.palette.text.secondary, maxWidth: 600, mx: 'auto' }}>
+            Join the future of finance today. No hidden fees, no complicated processes.
+          </Typography>
+          
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
+            <Button
+              variant="contained"
+              size="large"
+              endIcon={<ArrowRight />}
+              sx={{
+                px: 5,
+                py: 1.5,
+                borderRadius: 2,
+                fontSize: '1rem',
+                fontWeight: 500,
+              }}
+            >
+              Create Free Account
+            </Button>
+            <Button
+              variant="outlined"
+              size="large"
+              sx={{
+                px: 5,
+                py: 1.5,
+                borderRadius: 2,
+                fontSize: '1rem',
+                fontWeight: 500,
+              }}
+            >
+              Schedule a Demo
+            </Button>
+          </Stack>
+          
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            spacing={3} 
+            justifyContent="center" 
+            sx={{ mt: 6 }}
+            alignItems="center"
+          >
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <CheckCircle size={16} color={theme.palette.success.main} />
+              <Typography variant="body2">No credit card required</Typography>
+            </Stack>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <CheckCircle size={16} color={theme.palette.success.main} />
+              <Typography variant="body2">Free 30-day trial</Typography>
+            </Stack>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <CheckCircle size={16} color={theme.palette.success.main} />
+              <Typography variant="body2">24/7 Support</Typography>
+            </Stack>
+          </Stack>
+        </Card>
+      </Container>
+
+
+
+
+
+      {/* ===================== */}
+      {/* STORY */}
+      {/* ===================== */}
+      <AppSectionLayout>
+        <AppGridLayout columns={{ xs: "1fr", md: "1fr 2fr" }} gap="48px">
+          <Box>
+            <Typography variant="h6">My Story</Typography>
+            <Typography color="text.secondary">
+              A journey shaped by curiosity and consistency.
+            </Typography>
+          </Box>
+
+          <AppFlexLayout direction="column" gap="16px">
+            <Typography>
+              Saya memulai perjalanan di dunia pengembangan web dengan rasa
+              penasaran yang besar terhadap bagaimana sebuah ide dapat berubah
+              menjadi produk digital yang nyata dan bermanfaat.
+            </Typography>
+
+            <Typography>
+              Dari mempelajari dasar HTML, CSS, dan JavaScript hingga membangun
+              aplikasi yang lebih kompleks, setiap tahap menjadi proses belajar
+              yang membentuk cara saya berpikir sebagai developer.
+            </Typography>
+
+            <Typography>
+              Saat ini, saya berfokus membangun aplikasi yang clean, scalable,
+              dan berkelanjutan—dengan perhatian khusus pada struktur kode,
+              performa, serta pengalaman pengguna.
+            </Typography>
+          </AppFlexLayout>
+        </AppGridLayout>
+      </AppSectionLayout>
+
+      {/* ===================== */}
+      {/* EDUCATION TIMELINE */}
+      {/* ===================== */}
+      <AppSectionLayout>
+        <AppGridLayout columns={{ xs: "1fr", md: "1fr 2fr" }} gap="48px">
+          <Box>
+            <Typography variant="h6">Education</Typography>
+            <Typography color="text.secondary">
+              Learning milestones along the way.
+            </Typography>
+          </Box>
+
+          <Timeline
+            sx={{
+              [`& .${timelineItemClasses.root}:before`]: {
+                flex: 0,
+                padding: 0,
+              },
+            }}
+          >
+            {/* University */}
+            <TimelineItem>
+              <TimelineSeparator>
+                <TimelineDot color="primary">
+                  <GraduationCap size={18} />
+                </TimelineDot>
+                <TimelineConnector />
+              </TimelineSeparator>
+              <TimelineContent>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Bachelor of Computer Science
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  XYZ University · 2019 – 2023
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  Fokus pada software engineering, web development, dan struktur
+                  data. Aktif membangun project berbasis React dan Node.js
+                  sebagai bagian dari pembelajaran.
+                </Typography>
+              </TimelineContent>
+            </TimelineItem>
+
+            {/* Bootcamp / Course */}
+            <TimelineItem>
+              <TimelineSeparator>
+                <TimelineDot color="secondary">
+                  <GraduationCap size={18} />
+                </TimelineDot>
+                <TimelineConnector />
+              </TimelineSeparator>
+              <TimelineContent>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Full Stack Web Development Bootcamp
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Online Intensive Program · 2022
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  Mempelajari pengembangan aplikasi full stack dengan React,
+                  REST API, database, serta praktik clean code dan scalable
+                  architecture.
+                </Typography>
+              </TimelineContent>
+            </TimelineItem>
+
+            {/* Self Learning */}
+            <TimelineItem>
+              <TimelineSeparator>
+                <TimelineDot>
+                  <GraduationCap size={18} />
+                </TimelineDot>
+              </TimelineSeparator>
+              <TimelineContent>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Self-Taught Learning
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Ongoing
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  Belajar secara mandiri melalui dokumentasi resmi, open-source
+                  project, dan course online untuk terus meningkatkan kualitas
+                  kode dan pemahaman sistem.
+                </Typography>
+              </TimelineContent>
+            </TimelineItem>
+          </Timeline>
+        </AppGridLayout>
+      </AppSectionLayout>

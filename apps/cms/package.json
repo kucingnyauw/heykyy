@@ -1,0 +1,50 @@
+{
+  "name": "@heykyy/cms",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "CMS dashboard for personal portfolio website, built with React, MUI, and custom components from @heykyy/components. Provides content management, analytics, and admin features.",
+  "author": "Rifky Firmansyah",
+  "license": "ISC",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@fontsource/inter": "^5.2.8",
+    "@heykyy/components": "*",
+    "@heykyy/theme": "*",
+    "@heykyy/utils-frontend": "*",
+    "@heykyy/constant": "*",
+    "@mui/lab": "^7.0.1-beta.21",
+    "@mui/material": "^7.3.6",
+    "@reduxjs/toolkit": "^2.11.2",
+    "@supabase/supabase-js": "^2.89.0",
+    "@tanstack/react-query": "^5.90.12",
+    "axios": "^1.13.2",
+    "html-react-parser": "^5.2.16",
+    "lucide-react": "^0.268.0",
+    "react-hook-form": "^7.71.1",
+    "react-quill": "^2.0.0",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^6.26.2",
+    "react-syntax-highlighter": "^16.1.0",
+    "recharts": "^3.7.0",
+    "swr": "^2.3.8",
+    "web-vitals": "^5.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@vitejs/plugin-react": "^5.1.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "vite": "^7.2.4"
+  }
+}

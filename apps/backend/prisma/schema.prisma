@@ -1,0 +1,353 @@
+// ==================== GENERATOR CLIENT ====================
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==================== DATABASE DATASOURCE ====================
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ==================== ENUMS ====================
+enum Role {
+  ADMIN
+  USER
+}
+
+enum CategoryType {
+  BLOG
+  PROJECT
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// ==================== USER MODEL ====================
+model User {
+  id    String  @id @default(uuid())
+  name  String
+  email String  @unique
+  about String?
+  role  Role    @default(USER)
+
+  profilePhotoId String?
+  profilePhoto   Asset?  @relation("UserProfilePhoto", fields: [profilePhotoId], references: [id], onDelete: SetNull)
+
+  blogs        Blog[]
+  projects     Project[]
+  certificates Certificate[]
+  assets       Asset[]       @relation("UserAssets")
+  cvs          CV[]
+  blogLikes    BlogLike[]
+  projectLikes ProjectLike[]
+  comments     Comment[]
+  education    Education[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
+  @@index([email])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Education {
+  id          String  @id @default(uuid())
+  title       String
+  institution String
+  description String? @db.VarChar(255)
+
+  startYear DateTime
+  endYear   DateTime?
+  isCurrent Boolean   @default(false)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("educations")
+}
+
+// ==================== CATEGORY MODEL ====================
+model Category {
+  id   String       @id @default(uuid())
+  name String
+  type CategoryType
+
+  blogs    Blog[]
+  projects Project[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, type])
+  @@index([type])
+  @@map("categories")
+}
+
+// ==================== BLOG MODEL ====================
+model Blog {
+  id      String        @id @default(uuid())
+  title   String
+  slug    String        @unique
+  summary String?
+  status  ContentStatus @default(DRAFT)
+
+  isFeatured Boolean  @default(false)
+  viewCount  Int      @default(0)
+  likeCount  Int      @default(0)
+  tags       String[]
+
+  metaTitle String?
+  metaDesc  String?
+
+  authorId    String
+  categoryId  String?
+  thumbnailId String?
+  audioId     String?
+
+  author    User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category  Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  thumbnail Asset?      @relation("BlogThumbnail", fields: [thumbnailId], references: [id], onDelete: SetNull)
+  audio     Asset?      @relation("BlogAudio", fields: [audioId], references: [id], onDelete: SetNull) // Tambahkan ini
+  detail    BlogDetail?
+  likes     BlogLike[]
+  comments  Comment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([status])
+  @@index([isFeatured])
+  @@index([slug])
+  @@map("blogs")
+}
+
+model BlogDetail {
+  id          String @id @default(uuid())
+  blogId      String @unique
+  contentHtml String @db.Text
+
+  blog Blog @relation(fields: [blogId], references: [id], onDelete: Cascade)
+
+  @@map("blog_details")
+}
+
+model BlogLike {
+  id        String   @id @default(uuid())
+  blogId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  blog Blog @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([blogId, userId])
+  @@map("blog_likes")
+}
+
+// ==================== PROJECT MODEL ====================
+model Project {
+  id      String        @id @default(uuid())
+  title   String
+  slug    String        @unique
+  summary String?
+  status  ContentStatus @default(DRAFT)
+
+  isFeatured Boolean @default(false)
+  viewCount  Int     @default(0)
+  likeCount  Int     @default(0)
+
+  demoUrl       String?
+  repositoryUrl String?
+  metaTitle     String?
+  metaDesc      String?
+
+  authorId   String
+  categoryId String?
+  audioId    String?
+
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  audio    Asset?    @relation("ProjectAudio", fields: [audioId], references: [id], onDelete: SetNull) // Tambahkan ini
+
+  stacks     ProjectStack[]
+  thumbnails ProjectThumbnail[]
+  detail     ProjectDetail?
+  likes      ProjectLike[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([status])
+  @@index([slug])
+  @@map("projects")
+}
+
+model ProjectStack {
+  id        String @id @default(uuid())
+  projectId String
+  stackId   String
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  stack   Stack   @relation(fields: [stackId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, stackId])
+  @@map("project_stacks")
+}
+
+model Stack {
+  id   String  @id @default(uuid())
+  name String  @unique
+  icon String?
+  url  String?
+
+  projectStacks ProjectStack[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("stacks")
+}
+
+model ProjectDetail {
+  id          String @id @default(uuid())
+  projectId   String @unique
+  contentHtml String @db.Text
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_details")
+}
+
+model ProjectThumbnail {
+  id        String  @id @default(uuid())
+  projectId String
+  assetId   String?
+  order     Int     @default(0)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  asset   Asset?  @relation(fields: [assetId], references: [id], onDelete: SetNull)
+
+  @@unique([projectId, assetId])
+  @@map("project_thumbnails")
+}
+
+model ProjectLike {
+  id        String   @id @default(uuid())
+  projectId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_likes")
+}
+
+// ==================== COMMENT MODEL (Hanya untuk Blog) ====================
+model Comment {
+  id      String @id @default(uuid())
+  content String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  blogId String
+  blog   Blog   @relation(fields: [blogId], references: [id], onDelete: Cascade)
+
+  parentId String?
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[] @relation("CommentReplies")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([blogId])
+  @@index([userId])
+  @@map("comments")
+}
+
+// ==================== ASSET MODEL ====================
+model Asset {
+  id          String  @id @default(uuid())
+  storagePath String  @unique
+  url         String
+  fileName    String
+  fileType    String
+  fileSize    Int
+  checksum    String  @unique
+  userId      String?
+
+  user User? @relation("UserAssets", fields: [userId], references: [id], onDelete: Cascade)
+
+  blogThumbnail    Blog[]             @relation("BlogThumbnail")
+  projectThumbs    ProjectThumbnail[]
+  userProfile      User[]             @relation("UserProfilePhoto")
+  certificateFiles Certificate[]      @relation("CertFile")
+  certificateImg   Certificate[]      @relation("CertImage")
+  cvFiles          CV[]               @relation("CVFile")
+  blogAudios       Blog[]             @relation("BlogAudio")
+  projectAudios    Project[]          @relation("ProjectAudio")
+
+  createdAt DateTime @default(now())
+
+  @@index([storagePath])
+  @@index([userId])
+  @@map("assets")
+}
+
+// ==================== CERTIFICATE MODEL ====================
+model Certificate {
+  id      String @id @default(uuid())
+  title   String
+  summary String
+  issuer  String
+  year    Int
+
+  fileId String?
+  file   Asset?  @relation("CertFile", fields: [fileId], references: [id], onDelete: SetNull)
+
+  imageId String?
+  image   Asset?  @relation("CertImage", fields: [imageId], references: [id], onDelete: SetNull)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("certificates")
+}
+
+// ==================== CV MODEL ====================
+model CV {
+  id     String  @id @default(uuid())
+  title  String
+  isMain Boolean @default(false)
+
+  fileId String
+  file   Asset  @relation("CVFile", fields: [fileId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("cvs")
+}

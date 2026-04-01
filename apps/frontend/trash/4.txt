@@ -1,0 +1,487 @@
+  <Box sx={{ zIndex: 10 }}>
+        <Box sx={{ position: "relative" }}>
+          {boxes.map((value, idx) => {
+            return (
+              <Box
+                key={idx}
+                sx={{
+                  position: "absolute",
+                  top: value.top,
+                  left: value.left,
+                  right: value.right,
+                  zIndex: 1,
+                  width: { xs: 60, md: 90 },
+                  height: { xs: 60, md: 90 },
+                  background: `linear-gradient(135deg,
+                ${alpha(theme.palette.primary.main, 0.7)} 0%,
+                ${theme.palette.background.paper} 20%,
+                ${theme.palette.background.paper} 100%)`,
+                  border: `1px solid ${theme.palette.divider}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              ></Box>
+            );
+          })}
+        </Box>
+        <AppSectionLayout>
+          <AppFlexLayout direction="column" gap={4}>
+            <AppFlexLayout
+              direction="column"
+              sx={{
+                textAlign: "center",
+                zIndex: 3,
+              }}
+              gap={2}
+            >
+              <Chip
+                icon={<Sparkle fill="currentColor" stroke="none" />}
+                label="Our Workflows"
+                sx={{
+                  px: 1,
+                  py: 2,
+                  borderRadius: "20px",
+                  fontWeight: 500,
+                }}
+              />
+              <AppTitle text={INFO.homepage.sections[2].title} />
+              <AppSubtitle text={INFO.homepage.sections[2].description} />
+            </AppFlexLayout>
+            <AppGridLayout
+              columns={{
+                xs: "repeat(1, 1fr)",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(4, 1fr)",
+              }}
+              gap={3}
+              sx={{
+                mt: 2,
+              }}
+            >
+              {INFO.homepage.sections[2].steps.map((value, idx) => {
+                const Icon = value.icon;
+                return (
+                  <AppBasicCard
+                    key={idx}
+                    sx={{
+                      zIndex: 3,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    title={value.title}
+                    icon={<Icon size={24} />}
+                    subtitle={value.description}
+                    children={
+                      <ul style={{ paddingLeft: "1rem", marginTop: "0.5rem" }}>
+                        {value.tasks.map((task, taskIdx) => (
+                          <li key={taskIdx} style={{ marginBottom: "0.25rem" }}>
+                            {task}
+                          </li>
+                        ))}
+                      </ul>
+                    }
+                  />
+                );
+              })}
+            </AppGridLayout>
+          </AppFlexLayout>
+        </AppSectionLayout>
+      </Box>
+
+
+      import React, { memo, useMemo } from "react";
+import {
+  AppSectionLayout,
+  AppFlexLayout,
+  Glow,
+  FilledButton,
+  AppTitle,
+  AppSubtitle,
+  OutlinedButton,
+} from "@personal/components";
+import { Sparkle } from "lucide-react";
+import {
+  Box,
+  Typography,
+  useTheme,
+  alpha,
+  useMediaQuery,
+  Chip,
+} from "@mui/material";
+import { INFO } from "../data/Info";
+import moon from "../assets/area3.png";
+import { useParallax } from "../hooks/use-paralax";
+
+const Stars = memo(() => {
+  const starsConfig = useMemo(
+    () => [
+      { left: "15%", height: 80, duration: "18s" },
+      { left: "35%", height: 60, duration: "22s", delay: "4s" },
+      { left: "55%", height: 100, duration: "16s" },
+      { left: "75%", height: 70, duration: "24s", delay: "6s" },
+    ],
+    []
+  );
+
+  const starStyles = useMemo(
+    () => ({
+      position: "absolute",
+      inset: 0,
+      overflow: "hidden",
+      "& .star": {
+        position: "absolute",
+        top: "-20%",
+        width: "0.5px",
+        background:
+          "linear-gradient(180deg, rgba(220,235,255,0.6), transparent)",
+        animation: "starFall linear infinite",
+      },
+      "& .star::after": {
+        content: '""',
+        position: "absolute",
+        bottom: "-1px",
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "1px",
+        height: "1px",
+        borderRadius: "50%",
+        background: "rgba(235,245,255,0.8)",
+      },
+      "@keyframes starFall": {
+        "0%": { transform: "translateY(0)", opacity: 0 },
+        "10%": { opacity: 1 },
+        "100%": {
+          transform: "translateY(140vh)",
+          opacity: 0,
+        },
+      },
+    }),
+    []
+  );
+
+  return (
+    <Box sx={starStyles}>
+      {starsConfig.map((star, i) => (
+        <Box
+          key={`star-${i}`}
+          className="star"
+          sx={useMemo(
+            () => ({
+              left: star.left,
+              height: star.height,
+              animationDuration: star.duration,
+              animationDelay: star.delay || "0s",
+            }),
+            [star.left, star.height, star.duration, star.delay]
+          )}
+        />
+      ))}
+    </Box>
+  );
+});
+
+Stars.displayName = "Stars";
+
+const Moon = memo(({ moonRef }) => {
+  const moonStyles = useMemo(
+    () => ({
+      position: "fixed",
+      inset: 0,
+      top: "5%",
+      zIndex: 0,
+      opacity: 0.55,
+      pointerEvents: "none",
+      willChange: "transform",
+      contain: "paint",
+      animation: "moonFloat 10s ease-in-out infinite alternate",
+      "&::before": {
+        content: '""',
+        position: "absolute",
+        inset: 0,
+        background: `url(${moon}) center / cover no-repeat`,
+        animation: "moonRotate 30s linear infinite",
+      },
+      "@keyframes moonFloat": {
+        "0%": { transform: "translateY(0px)" },
+        "100%": { transform: "translateY(-20px)" },
+      },
+      "@keyframes moonRotate": {
+        "0%": { transform: "rotate(0deg)" },
+        "100%": { transform: "rotate(360deg)" },
+      },
+    }),
+    []
+  );
+
+  return <Box ref={moonRef} sx={moonStyles} />;
+});
+
+Moon.displayName = "Moon";
+
+const SectionHeader = memo(({ label, title, description }) => {
+  const chipStyles = useMemo(
+    () => ({
+      px: 1,
+      py: 2,
+      borderRadius: "20px",
+      fontWeight: 500,
+    }),
+    []
+  );
+
+  return (
+    <AppFlexLayout direction="column" gap={4}>
+      <AppFlexLayout direction="column" sx={{ textAlign: "center" }} gap={2}>
+        <Chip
+          icon={<Sparkle fill="currentColor" stroke="none" />}
+          label={label}
+          sx={chipStyles}
+        />
+        <AppTitle text={title} />
+        <AppSubtitle text={description} />
+      </AppFlexLayout>
+    </AppFlexLayout>
+  );
+});
+
+SectionHeader.displayName = "SectionHeader";
+
+const HeroSection = memo(({ isMobile, sections }) => {
+  const theme = useTheme();
+
+  const chipStyles = useMemo(
+    () => ({
+      px: 1.5,
+      py: 2,
+      borderRadius: "20px",
+    }),
+    []
+  );
+
+  const titleStyles = useMemo(
+    () => ({
+      fontWeight: 400,
+      maxWidth: 960,
+      background: `linear-gradient(135deg,
+        ${theme.palette.text.primary},
+        ${alpha(theme.palette.text.primary, 0.65)})`,
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+    }),
+    [theme.palette.text.primary]
+  );
+
+  const descriptionStyles = useMemo(
+    () => ({
+      color: theme.palette.text.secondary,
+      maxWidth: 600,
+      mx: "auto",
+    }),
+    [theme.palette.text.secondary]
+  );
+
+  const buttonStyles = useMemo(
+    () => ({
+      borderRadius: "20px",
+      flex: 1,
+      minWidth: 140,
+    }),
+    []
+  );
+
+  return (
+    <AppSectionLayout>
+      <AppFlexLayout direction="column" gap={2} textAlign="center">
+        <Chip
+          icon={<Sparkle fill="currentColor" stroke="none" />}
+          label="Full-Stack Developer"
+          sx={chipStyles}
+        />
+
+        <Typography variant={isMobile ? "h3" : "h1"} sx={titleStyles}>
+          {sections[0].title}
+        </Typography>
+
+        <Typography sx={descriptionStyles}>{sections[0].description}</Typography>
+
+        <AppFlexLayout gap={2}>
+          <FilledButton size="md" sx={buttonStyles}>
+            {sections[0].cta[0]}
+          </FilledButton>
+
+          <OutlinedButton size="md" sx={buttonStyles}>
+            {sections[0].cta[1]}
+          </OutlinedButton>
+        </AppFlexLayout>
+      </AppFlexLayout>
+    </AppSectionLayout>
+  );
+});
+
+HeroSection.displayName = "HeroSection";
+
+const GradientOverlay = memo(() => {
+  const theme = useTheme();
+
+  const overlayStyles = useMemo(
+    () => ({
+      position: "fixed",
+      inset: 0,
+      zIndex: 2,
+      background: `linear-gradient(135deg,
+        ${alpha(theme.palette.background.default, 0.9)} 0%,
+        ${alpha(theme.palette.background.default, 0.6)} 50%,
+        ${alpha(theme.palette.background.default, 0.9)} 100%)`,
+    }),
+    [theme.palette.background.default]
+  );
+
+  return <Box sx={overlayStyles} />;
+});
+
+GradientOverlay.displayName = "GradientOverlay";
+
+const GlowEffects = memo(({ position }) => {
+  const containerStyles = useMemo(
+    () => ({
+      position: "relative",
+      zIndex: 9,
+    }),
+    []
+  );
+
+  const glowPositions = useMemo(() => [position[0], position[1]], [position]);
+
+  return (
+    <Box sx={containerStyles}>
+      <Glow ratio={1.5} position={glowPositions[0]} />
+      <Glow ratio={1.5} position={glowPositions[1]} />
+    </Box>
+  );
+});
+
+GlowEffects.displayName = "GlowEffects";
+
+const SectionContent = memo(({ showEffects, sectionHeaders, sections }) => {
+  const sectionContents = useMemo(
+    () =>
+      sectionHeaders.map((header, idx) => ({
+        key: `section-${header.index}`,
+        header,
+        idx,
+        shouldShowGlow: showEffects && idx === 1,
+      })),
+    [sectionHeaders, showEffects]
+  );
+
+  return (
+    <>
+      {sectionContents.map(({ key, header, idx, shouldShowGlow }) => (
+        <AppSectionLayout key={key}>
+          <SectionHeader
+            label={header.label}
+            title={sections[header.index].title}
+            description={sections[header.index].description}
+          />
+          {shouldShowGlow && (
+            <GlowEffects position={["top-left", "top-right"]} />
+          )}
+        </AppSectionLayout>
+      ))}
+    </>
+  );
+});
+
+SectionContent.displayName = "SectionContent";
+
+const Homepage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isDark = useMemo(() => theme.palette.mode === "dark", [theme.palette.mode]);
+  const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+
+  const moonRef = useParallax(0.12);
+
+  const showEffects = useMemo(
+    () => isDark && !reduceMotion,
+    [isDark, reduceMotion]
+  );
+
+  const sections = useMemo(() => INFO.homepage.sections, []);
+
+  const sectionHeaders = useMemo(
+    () => [
+      { label: "Our Experience", index: 1 },
+      { label: "Our Workflows", index: 2 },
+      { label: "Our Services", index: 3 },
+    ],
+    []
+  );
+
+  const heroSectionKey = useMemo(
+    () => `hero-${isMobile}-${sections[0].title}`,
+    [isMobile, sections]
+  );
+
+  return (
+    <>
+      {showEffects && (
+        <>
+          <Moon moonRef={moonRef} />
+          <Stars />
+        </>
+      )}
+
+      <GradientOverlay />
+
+      <HeroSection 
+        key={heroSectionKey}
+        isMobile={isMobile} 
+        sections={sections} 
+      />
+
+      {showEffects && <GlowEffects position={["bottom-left", "bottom-right"]} />}
+
+      <SectionContent
+        showEffects={showEffects}
+        sectionHeaders={sectionHeaders}
+        sections={sections}
+      />
+    </>
+  );
+};
+
+export default memo(Homepage);
+
+
+      {boxes.map((value, idx) => {
+            return (
+              <Box
+                key={idx}
+                sx={{
+                  position: "absolute",
+                  top: value.top,
+                  ...(value.left && { left: value.left }),
+                  ...(value.right && { right: value.right }),
+                  zIndex: 9,
+                  width: { xs: 60, md: 90 },
+                  height: { xs: 60, md: 90 },
+                  background: `
+                  radial-gradient(circle at top, ${alpha(
+                    theme.palette.secondary.main,
+                    0.6
+                  )} 0%, transparent 70%),
+                  radial-gradient(circle at bottom, ${alpha(
+                    theme.palette.secondary.light,
+                    0.4
+                  )} 0%, transparent 80%),
+                  ${theme.palette.background.paper}
+                `,
+                  backgroundBlendMode: "screen",
+                  border: `1px solid ${theme.palette.divider}`,
+                }}
+              />
+            );
+          })}

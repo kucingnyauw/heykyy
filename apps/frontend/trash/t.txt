@@ -1,0 +1,438 @@
+import React from "react";
+import {
+  AppSectionLayout,
+  AppFlexLayout,
+  AppGridLayout,
+  WireframeBox,
+  AppTitle,
+  AppSubtitle,
+  IconButton,
+} from "@personal/components";
+import { Box, Chip, useTheme, Typography } from "@mui/material";
+import { Sparkle, Linkedin, Instagram, Github } from "lucide-react";
+
+const About = () => {
+  const theme = useTheme();
+
+  return (
+    <>
+      {/* ===================== */}
+      {/* 1. HERO SECTION (Split Layout - Profile Focus) */}
+      {/* ===================== */}
+      <AppSectionLayout>
+        <AppGridLayout
+          columns={{ xs: "1fr", md: "1fr 1fr" }}
+          gap={{ xs: "64px", md: "80px" }}
+          align="center"
+        >
+          {/* LEFT — Personal Intro */}
+          <AppFlexLayout
+            direction="column"
+            align={{ xs: "center", md: "flex-start" }}
+            gap="32px"
+            sx={{
+              textAlign: { xs: "center", md: "left" },
+              order: { xs: 1, md: 0 },
+            }}
+          >
+            {/* Chip: "About Me" */}
+            <Chip
+              icon={<Sparkle fill="currentColor" stroke="none" />}
+              label={"Developers"}
+              sx={{ px: 1.5, py: 2, borderRadius: "20px" }}
+            />
+
+            {/* H1 Headline: "It’s Rifky, Creative Developer." */}
+            <AppTitle text="I’m Tharindu N. I live in Sri Lanka, where I design the future." />
+
+            {/* Subtitle / Short Intro */}
+            <AppSubtitle text="I've worked on a variety of projects over the years and I'm proud of the progress I've made. Many of these projects are open-source and available for others to explore and contribute to. If you're interested in any of the projects I've worked on, please feel free to check out the code and suggest any improvements or enhancements you might have in mind. Collaborating with others is a great way to learn and grow, and I'm always open to new ideas and feedback." />
+
+            {/* Social Icons */}
+            <AppFlexLayout gap="24px" sx={{ marginTop: "16px" }}>
+              <IconButton icon={<Github />} />
+              <IconButton icon={<Linkedin />} />
+              <IconButton icon={<Instagram />} />
+            </AppFlexLayout>
+          </AppFlexLayout>
+
+          {/* RIGHT — Profile Image (Large) */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              width: "100%",
+              p: 2,
+            }}
+          >
+            <Box
+              sx={{
+                width: { xs: 160, sm: 220, md: 300 },
+                height: { xs: 160, sm: 220, md: 300 },
+                transform: "rotate(-10deg)",
+                background:
+                  "linear-gradient(135deg, rgba(0,0,0,0.1), rgba(0,0,0,0))",
+                borderRadius: "24px",
+                overflow: "hidden",
+              }}
+            >
+              <Box
+                component="img"
+                src="https://rpzdykmtvrfstcpxjwcj.supabase.co/storage/v1/object/public/app-storage/app-assets/ky.png"
+                alt="ky"
+                sx={{
+                  mt: { xs: "10px", md: "20px" },
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  transform: "rotate(10deg)",
+                }}
+              />
+            </Box>
+          </Box>
+        </AppGridLayout>
+      </AppSectionLayout>
+
+      {/* ===================== */}
+      {/* 2. BIOGRAPHY  */}
+      {/* ===================== */}
+      <AppSectionLayout>
+        <AppGridLayout columns={{ xs: "1fr", md: "1fr 2fr" }} gap="64px">
+          {/* Left: Sticky Title "My Story" */}
+          <Typography variant="h6">My Story</Typography>
+
+          {/* Right: Text Content */}
+          <AppFlexLayout direction="column" gap="32px">
+            {/* Paragraph 1: Background */}
+            <WireframeBox width="100%" height={120} sx={{ borderRadius: 0 }} />
+
+            {/* Quote Block / Highlight */}
+            <WireframeBox width="100%" height={80} sx={{ borderRadius: 0 }} />
+
+            {/* Paragraph 2: Philosophy/Current State */}
+            <WireframeBox width="100%" height={120} sx={{ borderRadius: 0 }} />
+          </AppFlexLayout>
+        </AppGridLayout>
+      </AppSectionLayout>
+
+      {/* ===================== */}
+      {/* 3. TIMELINE (Experience & Education) */}
+      {/* ===================== */}
+      {/* Ini inti dari page About: Journey Anda */}
+      <AppSectionLayout>
+        {/* Section Header */}
+        <Typography variant="h6">Education</Typography>
+
+        <AppFlexLayout direction="column" gap="48px">
+          {/* Item 1: Education (Unpam) */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
+              gap: { xs: "16px", md: "64px" },
+              borderBottom: "1px solid #eee",
+              paddingBottom: "48px",
+            }}
+          >
+            <Box sx={{ width: { xs: "100%", md: "200px" } }}>
+              <WireframeBox width={120} height={32} sx={{ borderRadius: 0 }} />{" "}
+              {/* Date */}
+            </Box>
+            <Box
+              sx={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                gap: "16px",
+              }}
+            >
+              <WireframeBox width={250} height={32} sx={{ borderRadius: 0 }} />{" "}
+              {/* Degree */}
+              <WireframeBox
+                width={200}
+                height={24}
+                sx={{ borderRadius: 0 }}
+              />{" "}
+              {/* Institution */}
+              <WireframeBox
+                width="100%"
+                height={64}
+                sx={{ borderRadius: 0 }}
+              />{" "}
+              {/* Desc */}
+            </Box>
+          </Box>
+
+          {/* Item 2: Experience (Internship/Project) */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
+              gap: { xs: "16px", md: "64px" },
+              borderBottom: "1px solid #eee",
+              paddingBottom: "48px",
+            }}
+          >
+            <Box sx={{ width: { xs: "100%", md: "200px" } }}>
+              <WireframeBox width={120} height={32} sx={{ borderRadius: 0 }} />
+            </Box>
+            <Box
+              sx={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                gap: "16px",
+              }}
+            >
+              <WireframeBox width={250} height={32} sx={{ borderRadius: 0 }} />
+              <WireframeBox width={200} height={24} sx={{ borderRadius: 0 }} />
+              <WireframeBox width="100%" height={64} sx={{ borderRadius: 0 }} />
+            </Box>
+          </Box>
+
+          {/* Item 3: Previous Education (SMAN 15) */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
+              gap: { xs: "16px", md: "64px" },
+              paddingBottom: "48px",
+            }}
+          >
+            <Box sx={{ width: { xs: "100%", md: "200px" } }}>
+              <WireframeBox width={120} height={32} sx={{ borderRadius: 0 }} />
+            </Box>
+            <Box
+              sx={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                gap: "16px",
+              }}
+            >
+              <WireframeBox width={250} height={32} sx={{ borderRadius: 0 }} />
+              <WireframeBox width={200} height={24} sx={{ borderRadius: 0 }} />
+            </Box>
+          </Box>
+        </AppFlexLayout>
+      </AppSectionLayout>
+
+      {/* ===================== */}
+      {/* 4. INTERESTS / HOBBIES */}
+      {/* ===================== */}
+      <AppSectionLayout>
+      <Typography variant="h6">My Story</Typography>
+        <AppGridLayout columns={{ xs: "1fr", md: "1fr 1fr" }} gap="32px">
+          <WireframeBox width="100%" height={250} sx={{ borderRadius: 0 }} />
+          <WireframeBox width="100%" height={250} sx={{ borderRadius: 0 }} />
+        </AppGridLayout>
+      </AppSectionLayout>
+    </>
+  );
+};
+
+export default About;
+
+
+import React from "react";
+import {
+  AppSectionLayout,
+  AppFlexLayout,
+  AppGridLayout,
+  WireframeBox,
+} from "@personal/components";
+import { Box } from "@mui/material";
+
+/* ===================== */
+/* DATA */
+/* ===================== */
+const timelineData = [
+  {
+    date: "2019 – 2023",
+    title: "Bachelor of Informatics",
+    subtitle: "Universitas Pamulang",
+    descHeight: 64,
+  },
+  {
+    date: "2023 – Now",
+    title: "Frontend Developer",
+    subtitle: "Freelance / Personal Projects",
+    descHeight: 64,
+  },
+];
+
+const interestsData = [1, 2];
+const socials = [1, 2, 3];
+
+const About = () => {
+  return (
+    <>
+      {/* ===================== */}
+      {/* 1. HERO (SPECIAL) */}
+      {/* ===================== */}
+      <AppSectionLayout>
+        <AppGridLayout
+          columns={{ xs: "1fr", md: "1fr 1fr" }}
+          gap={{ xs: "48px", md: "80px" }}
+          align="center"
+        >
+          {/* LEFT */}
+          <AppFlexLayout
+            direction="column"
+            gap="32px"
+            align={{ xs: "center", md: "flex-start" }}
+            sx={{ textAlign: { xs: "center", md: "left" } }}
+          >
+            <WireframeBox width={140} height={32} />
+            <WireframeBox
+              width={{ xs: "100%", md: 500 }}
+              height={{ xs: 96, md: 140 }}
+            />
+            <WireframeBox
+              width={{ xs: "100%", md: 420 }}
+              height={{ xs: 80, md: 100 }}
+            />
+
+            <AppFlexLayout gap="20px">
+              {socials.map((_, i) => (
+                <WireframeBox key={i} width={48} height={48} />
+              ))}
+            </AppFlexLayout>
+          </AppFlexLayout>
+
+          {/* RIGHT */}
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <WireframeBox
+              width={{ xs: "100%", md: 450 }}
+              height={{ xs: 360, md: 520 }}
+            />
+          </Box>
+        </AppGridLayout>
+      </AppSectionLayout>
+
+      {/* ===================== */}
+      {/* 2. STORY */}
+      {/* ===================== */}
+      <AppSectionLayout>
+        <AppGridLayout columns={{ xs: "1fr", md: "1fr 2fr" }} gap="48px">
+          <Box>
+            <WireframeBox width={120} height={24} sx={{ mb: "16px" }} />
+            <WireframeBox width={320} height={48} />
+          </Box>
+
+          <WireframeBox width="100%" height={300} />
+        </AppGridLayout>
+      </AppSectionLayout>
+
+      {/* ===================== */}
+      {/* 3. TIMELINE (FIXED) */}
+      {/* ===================== */}
+      <AppSectionLayout>
+        <AppGridLayout columns={{ xs: "1fr", md: "1fr 2fr" }} gap="48px">
+          {/* LEFT HEADER */}
+          <Box>
+            <WireframeBox width={120} height={24} sx={{ mb: "16px" }} />
+            <WireframeBox width={360} height={48} />
+          </Box>
+
+          {/* RIGHT TIMELINE CONTENT */}
+          <AppFlexLayout direction="column">
+            {timelineData.map((item, i) => {
+              const isLast = i === timelineData.length - 1;
+
+              return (
+                <Box
+                  key={i}
+                  sx={{
+                    display: "flex",
+                    gap: { xs: "16px", md: "32px" },
+                    position: "relative",
+                  }}
+                >
+                  {/* COLUMN 1: DATE (DESKTOP ONLY) */}
+                  <Box
+                    sx={{
+                      width: "120px",
+                      textAlign: "right",
+                      flexShrink: 0,
+                      display: { xs: "none", md: "block" },
+                      pt: "4px", // Optical adj agar sejajar dengan dot
+                    }}
+                  >
+                    <WireframeBox width="100%" height={24} />
+                  </Box>
+
+                  {/* COLUMN 2: VISUAL (DOT + LINE) */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                    }}
+                  >
+                    {/* DOT */}
+                    <Box
+                      sx={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: "50%",
+                        border: "2px solid white",
+                        bgcolor: "transparent", // atau 'background.paper' jika ingin bolong
+                        boxShadow: "inset 0 0 0 4px white", // Efek solid dot
+                        zIndex: 1,
+                        flexShrink: 0,
+                        mt: "6px", // Align dot dengan baris pertama teks
+                      }}
+                    />
+
+                    {/* LINE (Show only if NOT last item) */}
+                    {!isLast && (
+                      <Box
+                        sx={{
+                          width: "2px",
+                          flexGrow: 1, // Fill remaining height
+                          minHeight: "48px", // Jarak minimal antar item
+                          bgcolor: "rgba(255, 255, 255, 0.3)", // Garis sedikit transparan agar tidak terlalu keras
+                          my: "4px",
+                        }}
+                      />
+                    )}
+                  </Box>
+
+                  {/* COLUMN 3: CONTENT */}
+                  <Box sx={{ pb: isLast ? 0 : "48px", flexGrow: 1 }}>
+                    {/* Date for Mobile Only */}
+                    <Box
+                      sx={{
+                        display: { xs: "block", md: "none" },
+                        mb: "8px",
+                      }}
+                    >
+                      <WireframeBox width={100} height={20} />
+                    </Box>
+
+                    {/* Title & Desc */}
+                    <AppFlexLayout direction="column" gap="8px">
+                      <WireframeBox width={{xs : "100px" , md : "550px"}} height={32} />
+                      <WireframeBox width={200} height={24} />
+                      <WireframeBox
+                        width="100%"
+                        height={item.descHeight}
+                        sx={{ mt: "8px" }}
+                      />
+                    </AppFlexLayout>
+                  </Box>
+                </Box>
+              );
+            })}
+          </AppFlexLayout>
+        </AppGridLayout>
+      </AppSectionLayout>
+
+ 
+    </>
+  );
+};
+
+export default About;

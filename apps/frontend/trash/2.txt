@@ -1,0 +1,507 @@
+ const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isDark = useSelector(isDarkMode);
+
+  const boxes = [
+    { top: 0, left: 0 },
+    { top: { xs: 80, md: 120 }, left: { xs: "19%", md: "9%" } },
+    { top: 0, right: 0 },
+    { top: { xs: 80, md: 120 }, right: { xs: "19%", md: "9%" } },
+  ];
+
+  const cards = [
+    {
+      icon: Code2,
+      title: "Frontend Development",
+      desc: "Building responsive and scalable user interfaces",
+      span: 5,
+    },
+    {
+      icon: Layers,
+      title: "UI Implementation",
+      desc: "Turning designs into pixel-perfect code",
+      span: 5,
+    },
+    {
+      icon: Shuffle,
+      title: "State Management",
+      desc: "Managing complex UI state and async flows",
+      span: 5,
+    },
+    {
+      icon: Plug,
+      title: "API Integration",
+      desc: "Connecting frontend with backend services",
+      span: 7,
+    },
+    {
+      icon: Gauge,
+      title: "Performance Optimization",
+      desc: "Optimizing load time and interactions",
+      span: 7,
+    },
+    {
+      icon: Boxes,
+      title: "Clean Architecture",
+      desc: "Writing maintainable and scalable code",
+      span: 5,
+    },
+  ];
+
+  return (
+    <>
+      <Box
+        sx={{
+          position: "fixed", 
+          inset: 0,
+          width: "100vw",
+          height: "100vh",
+          zIndex: 2,
+          pointerEvents: "none",
+          visibility: isDark ? "visible" : "hidden",
+          opacity: 0.6,
+
+          backgroundImage: `
+      radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+      radial-gradient(1px 1px at 80% 40%, #fff, transparent),
+      radial-gradient(1px 1px at 50% 80%, #fff, transparent),
+      radial-gradient(1px 1px at 10% 70%, #fff, transparent),
+      radial-gradient(1px 1px at 90% 90%, #fff, transparent)
+    `,
+          backgroundRepeat: "repeat",
+          backgroundSize: "300px 300px",
+        }}
+      />
+
+      {/* =====================
+          Background Image
+      ===================== */}
+      <Box
+        sx={{
+          position: "absolute",
+          inset: 0,
+          top: "5%",
+          visibility: isDark ? "visible" : "hidden",
+          zIndex: 0,
+          opacity: 0.5,
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            inset: 0,
+            background: `url(${moon})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          },
+        }}
+      />
+
+      {/* =====================
+          Stars Effect
+      ===================== */}
+      <Box
+        sx={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 1,
+          visibility: isDark ? "visible" : "hidden",
+          pointerEvents: "none",
+          overflow: "hidden",
+
+          "& .star": {
+            position: "absolute",
+            top: "10%",
+            width: "1px",
+            borderRadius: "2px",
+            background:
+              "linear-gradient(0deg, rgba(220,235,255,0.9) 0%, transparent 100%)",
+            filter: "blur(0.4px)",
+          },
+
+          "& .star::after": {
+            content: '""',
+            position: "absolute",
+            bottom: "-4px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "6px",
+            height: "6px",
+            borderRadius: "50%",
+            background: "rgba(235,245,255,1)",
+            boxShadow: "0 0 8px rgba(200,220,255,0.9)",
+          },
+
+          "& .star:nth-of-type(1)": { left: "8%", height: 140 },
+          "& .star:nth-of-type(2)": { left: "36%", height: 90 },
+          "& .star:nth-of-type(3)": { left: "54%", height: 170 },
+          "& .star:nth-of-type(4)": { left: "72%", height: 110 },
+          "& .star:nth-of-type(5)": { left: "86%", height: 70 },
+        }}
+      >
+        {[1, 2, 3, 4, 5].map((i) => (
+          <Box key={i} className="star" />
+        ))}
+      </Box>
+      {/* =====================
+          Gradient Overlay
+      ===================== */}
+      <Box
+        sx={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 1,
+          background: `linear-gradient(135deg,
+            ${alpha(theme.palette.background.default, 0.85)} 0%,
+            ${alpha(theme.palette.background.default, 0.6)} 50%,
+            ${alpha(theme.palette.background.default, 0.9)} 100%)`,
+        }}
+      />
+      {isDark && (
+        <Box sx={{ position: "relative" }}>
+          <Glow ratio={1.5} position="top-left" />
+          <Glow ratio={1.5} position="top-right" />
+        </Box>
+      )}
+      {/* =====================
+          HERO SECTION
+      ===================== */}
+      <Container
+        maxWidth="lg"
+        sx={{
+          position: "relative",
+          zIndex: 2,
+          minHeight: { xs: 490, md: 520 },
+
+          borderRadius: theme.shape.borderRadius,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "start",
+          textAlign: "center",
+          gap: { xs: 3, md: 4 },
+          py: 2,
+        }}
+      >
+        <Chip
+          icon={<Sparkle fill="currentColor" stroke="none" />}
+          label="Full-Stack Developer"
+          sx={{
+            px: 1.5,
+            py: 2,
+            borderRadius: "20px",
+            fontWeight: 500,
+          }}
+        />
+
+        <Typography
+          variant={isMobile ? "h3" : "h1"}
+          sx={{
+            fontWeight: 400,
+            lineHeight: 1.5,
+            maxWidth: 960,
+            background: `linear-gradient(135deg,
+              ${theme.palette.text.primary} 0%,
+              ${alpha(theme.palette.text.primary, 0.7)} 100%)`,
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          Hi, I’m Rifky — a developer who builds modern web applications with
+          clean code, scalable systems, and thoughtful user-centered design.
+        </Typography>
+
+        <Typography
+          variant="body1"
+          sx={{
+            mt: 1,
+            color: theme.palette.text.secondary,
+            maxWidth: 600,
+          }}
+        >
+          I enjoy turning ideas into well-structured and scalable applications,
+          carefully balancing performance, maintainability, and user experience
+          while applying clean architecture and modern development practices.
+        </Typography>
+
+        <Button
+          variant="contained"
+          size="large"
+          sx={{
+            mt: 4,
+            px: 5,
+            py: 1.6,
+            borderRadius: "20px",
+          }}
+        >
+          See My Resume
+        </Button>
+      </Container>
+      {/* =====================
+          TOOLS SECTION
+      ===================== */}
+      <Container
+        maxWidth="lg"
+        sx={{
+          position: "relative",
+          zIndex: 10,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+
+          minHeight: { xs: 230, md: 320 },
+          borderRadius: theme.shape.borderRadius,
+          mt: { xs: 4, md: 3 },
+          alignItems: "center",
+          textAlign: "center",
+          gap: { xs: 3, md: 4 },
+          py: { xs: 4, md: 6 },
+        }}
+      >
+        <Box
+          sx={{
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <Chip
+            icon={<Sparkle fill="currentColor" stroke="none" />}
+            label="Full-Stack Developer"
+            sx={{
+              px: 1.5,
+              py: 2,
+              borderRadius: "20px",
+              fontWeight: 500,
+            }}
+          />
+
+          <Typography
+            variant={isMobile ? "h4" : "h3"}
+            sx={{
+              fontWeight: 500,
+              maxWidth: 960,
+              background: `linear-gradient(135deg,
+        ${alpha(theme.palette.text.primary, 0.7)} 0%,
+        ${theme.palette.text.primary} 100%)`,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            Tools That Power My Development Workflow
+          </Typography>
+
+          <Typography
+            variant="body1"
+            sx={{
+              color: theme.palette.text.secondary,
+              maxWidth: { xs: 400, md: 800 },
+            }}
+          >
+            A curated set of tools and technologies I use daily to build
+            reliable, scalable, and high-quality digital products.
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "repeat(2, 1fr)",
+              sm: "repeat(3, 1fr)",
+              md: "repeat(6, 1fr)",
+            },
+            gap: { xs: 2, md: 4 },
+            width: "100%",
+            mt: 2,
+          }}
+        >
+          {[
+            "tailwind-light.webp",
+            "supabase-light.webp",
+            "gcp-light.webp",
+            "docker-light.webp",
+            "firebase-light.webp",
+            "jira-light.webp",
+          ].map((img) => (
+            <Box
+              key={img}
+              sx={{
+                height: 120,
+                borderRadius: theme.shape.borderRadius,
+                backgroundColor: theme.palette.background.paper,
+                border: `1px solid ${theme.palette.divider}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                p: 1,
+                userSelect: "none",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  transform: "scale(1.05)",
+                },
+              }}
+            >
+              <Box
+                component="img"
+                src="https://brandlogos.net/wp-content/uploads/2017/09/google-cloud-logo-512x512.png"
+                alt={img}
+                sx={{
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                  objectFit: "contain",
+                }}
+              />
+            </Box>
+          ))}
+        </Box>
+      </Container>
+      {isDark && (
+        <Box sx={{ position: "relative" }}>
+          <Glow ratio={1.5} position="top-left" />
+          <Glow ratio={1.5} position="top-right" />
+        </Box>
+      )}
+
+      <Container
+        maxWidth="lg"
+        sx={{
+          position: "relative",
+          zIndex: 10,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+
+          minHeight: { xs: 230, md: 320 },
+          borderRadius: theme.shape.borderRadius,
+          mt: { xs: 4, md: 3 },
+          alignItems: "center",
+          textAlign: "center",
+          gap: { xs: 3, md: 6 },
+          py: { xs: 4, md: 6 },
+        }}
+      >
+        <Box
+          sx={{
+            zIndex: 10,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 1,
+            textAlign: "center",
+          }}
+        >
+          <Chip
+            icon={<Sparkle fill="currentColor" stroke="none" />}
+            label="Full-Stack Developer"
+            sx={{
+              px: 1.5,
+              py: 2,
+              borderRadius: "20px",
+              fontWeight: 500,
+            }}
+          />
+          <Typography
+            variant={isMobile ? "h4" : "h3"}
+            sx={{
+              fontWeight: 500,
+              maxWidth: 960,
+              background: `linear-gradient(135deg,
+        ${alpha(theme.palette.text.primary, 0.7)} 0%,
+        ${theme.palette.text.primary} 100%)`,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            Innovative Solutions to Elevate Your Projects
+          </Typography>
+
+          <Typography
+            variant="body1"
+            sx={{
+              color: theme.palette.text.secondary,
+              maxWidth: { xs: 400, md: 800 },
+            }}
+          >
+            I help turn ideas into practical, high-quality digital solutions
+            that bring real value to your projects.
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(12, 1fr)",
+            gap: { xs: 2, sm: 3, md: 4 },
+          }}
+        >
+          {cards.map((card, i) => {
+            const Icon = card.icon;
+
+            return (
+              <Box
+                key={i}
+                sx={{
+                  gridColumn: {
+                    xs: "span 12", // mobile
+                    sm: "span 6", // tablet
+                    md: `span 4`, // desktop
+                  },
+                  p: { xs: 2.5, sm: 3, md: 4 },
+                  minHeight: 150,
+                  position: "relative",
+                  overflow: "hidden",
+                  borderRadius: theme.shape.borderRadius,
+                  backgroundColor: theme.palette.background.paper,
+                  border: `1px solid ${theme.palette.divider}`,
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                {isDark && <Glow ratio={0.5} position="top-right" />}
+
+                {/* HEADER */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    textAlign: "start",
+                    gap: 2.5,
+                  }}
+                >
+                  {/* ICON */}
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      flexShrink: 0,
+                      borderRadius: theme.shape.borderRadius,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: alpha(theme.palette.primary.main, 0.18),
+                    }}
+                  >
+                    <Icon
+                      color={theme.palette.primary.main}
+                      size={24}
+                      strokeWidth={1.8}
+                    />
+                  </Box>
+
+                  {/* TITLE + SUBTITLE */}
+                  <Box>
+                    <Typography variant="h6">{card.title}</Typography>
+
+                    <Typography variant="body1" color="text.secondary" mt={0.5}>
+                      {card.desc}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
+      </Container>
+    </>

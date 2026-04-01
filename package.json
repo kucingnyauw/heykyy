@@ -1,0 +1,24 @@
+{
+  "name": "heykyy-monorepo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "packages/utils/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "build:apps": "turbo build --filter=\"./apps/**\"",
+    "build:packages": "turbo build --filter=\"./packages/**\"",
+    "clean": "turbo run clean",
+    "lint": "turbo run lint",
+    "bootstrap": "npm install && turbo prune --force"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.1",
+    "turbo": "^1.13.4",
+    "typescript": "^6.0.2"
+  }
+}

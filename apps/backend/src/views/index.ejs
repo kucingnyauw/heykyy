@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-[#0a0a0a] text-neutral-400 flex items-center justify-center min-h-screen antialiased">
+  <div class="flex flex-col items-center p-10 rounded-2xl border border-neutral-800/60 bg-neutral-900/20 w-[90%] max-w-sm">
+    <h1 class="text-2xl font-semibold text-neutral-100 mb-1.5 tracking-tight">
+      <%= title %>
+    </h1>
+    
+    <p class="text-sm text-neutral-500 mb-8">
+      API Version <%= version %>
+    </p>
+    
+    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-neutral-800/80 bg-neutral-900/50 text-xs font-medium text-neutral-300">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)]"></span>
+      <%= status %>
+    </div>
+  </div>
+</body>
+</html>
