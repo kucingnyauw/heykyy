@@ -43,6 +43,7 @@
     "slick-carousel": "^1.8.1",
     "tech-stack-icons": "^3.7.1",
     "web-vitals": "^5.2.0"
+
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
@@ -51,6 +52,7 @@
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+        "tsup": "^8.0.2"
   }
 }
