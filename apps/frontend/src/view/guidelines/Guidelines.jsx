@@ -1,14 +1,22 @@
-import React, { useMemo, memo } from "react";
-import { Helmet } from "react-helmet";
-import { Typography, Box } from "@mui/material";
-import { AppFlexLayout, AppBasicCard } from "@heykyy/components";
+/**
+ * @fileoverview Komponen halaman Community Guidelines.
+ * Merender konten panduan komunitas menggunakan arsitektur layout standar 
+ * seperti Container dan Stack, serta komponen BaseCard untuk daftar item.
+ * Terintegrasi dengan React Helmet untuk injeksi metadata SEO.
+ */
 
-import GuidelinesMock from "../../mock/guidelines-mock";
-import SEO from "../../data/seo";
+import React, { useMemo } from "react";
+import { Helmet } from "react-helmet";
+import { Stack, Container, Typography, Box } from "@mui/material";
+import { BaseCard } from "@ui/card";
+import GuidelinesMock from "@mock/guidelines-mock";
+import SEO from "@data/seo";
 
 /**
- * Komponen halaman Guidelines / Rules untuk blog/forum portfolio.
- * @returns {JSX.Element}
+ * Komponen utama untuk halaman Community Guidelines.
+ *
+ * @component
+ * @returns {JSX.Element} Halaman Community Guidelines yang sudah dirakit secara utuh.
  */
 const Guidelines = () => {
   const guidelinesSEO = useMemo(
@@ -29,8 +37,6 @@ const Guidelines = () => {
         {guidelinesSEO?.canonical && (
           <link rel="canonical" href={guidelinesSEO.canonical} />
         )}
-
-        {/* Open Graph */}
         {guidelinesSEO?.og?.title && (
           <meta property="og:title" content={guidelinesSEO.og.title} />
         )}
@@ -49,8 +55,6 @@ const Guidelines = () => {
         {guidelinesSEO?.og?.site_name && (
           <meta property="og:site_name" content={guidelinesSEO.og.site_name} />
         )}
-
-        {/* Twitter */}
         {guidelinesSEO?.twitter?.card && (
           <meta name="twitter:card" content={guidelinesSEO.twitter.card} />
         )}
@@ -71,29 +75,31 @@ const Guidelines = () => {
         )}
       </Helmet>
 
-      <AppFlexLayout direction="column" align="flex-start" gap={2}>
-        {/* Title & Subtitle Wrapper */}
-        <Box sx={{ textAlign: "left", mb: 1 }}>
-          <Typography variant="h3" component="h1" gutterBottom>
-            Community Guidelines
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Please read and follow these rules to maintain a respectful and safe environment for everyone.
-          </Typography>
-        </Box>
+      <Container maxWidth="lg">
+        <Stack direction="column" alignItems="stretch" spacing={4}>
+          <Box sx={{ textAlign: "left", mb: 1 }}>
+            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
+              Community Guidelines
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 700 }}>
+              Please read and follow these rules to maintain a respectful and safe environment for everyone.
+            </Typography>
+          </Box>
 
-        {/* Guidelines List */}
-        {GuidelinesMock.map((item, index) => (
-          <AppBasicCard 
-            key={index} 
-            title={item.heading} 
-            subtitle={item.content} 
-            icon={<item.icon />} 
-          />
-        ))}
-      </AppFlexLayout>
+          <Stack direction="column" spacing={2}>
+            {GuidelinesMock.map((item, index) => (
+              <BaseCard 
+                key={index} 
+                title={item.heading} 
+                subtitle={item.content} 
+                icon={item.icon ? <item.icon size={24} /> : null} 
+              />
+            ))}
+          </Stack>
+        </Stack>
+      </Container>
     </>
   );
 };
 
-export default memo(Guidelines);
+export default Guidelines;

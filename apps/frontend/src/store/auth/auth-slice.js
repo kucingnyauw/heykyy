@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
-  getCurrentUser,
+  getUser ,
   signInWithOtp,
   logout as logoutThunk,
 } from "./auth-thunk";
@@ -49,15 +49,15 @@ const authSlice = createSlice({
         state.error = action.payload;
         state.isInitialized = true;
       })
-      .addCase(getCurrentUser.pending, (state) => {
+      .addCase(getUser.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(getCurrentUser.fulfilled, (state, action) => {
+      .addCase(getUser.fulfilled, (state, action) => {
         state.status = "success";
         state.user = action.payload;
         state.isInitialized = true;
       })
-      .addCase(getCurrentUser.rejected, (state) => {
+      .addCase(getUser.rejected, (state) => {
         state.status = "error";
         state.user = null;
         state.isInitialized = true;

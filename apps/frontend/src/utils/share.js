@@ -1,0 +1,70 @@
+import {
+    FacebookShareButton,
+    EmailShareButton,
+    TelegramShareButton,
+    RedditShareButton,
+    ThreadsShareButton,
+    XShareButton,
+    WhatsappShareButton,
+    LinkedinShareButton,
+    FacebookIcon,
+    TwitterIcon,
+    WhatsappIcon,
+    LinkedinIcon,
+    TelegramIcon,
+    RedditIcon,
+    ThreadsIcon,
+    EmailIcon,
+    XIcon,
+  } from "react-share";
+  
+  export const SHARE_PLATFORMS = [
+    {
+      label: "WhatsApp",
+      Button: WhatsappShareButton,
+      Icon: WhatsappIcon,
+      color: "#25D366",
+    },
+    {
+      label: "X",
+      Button: XShareButton,
+      Icon: XIcon,
+      color: "#000000",
+    },
+    {
+      label: "Telegram",
+      Button: TelegramShareButton,
+      Icon: TelegramIcon,
+      color: "#0088cc",
+    },
+    {
+      label: "Facebook",
+      Button: FacebookShareButton,
+      Icon: FacebookIcon,
+      color: "#1877F2",
+    },
+    {
+      label: "LinkedIn",
+      Button: LinkedinShareButton,
+      Icon: LinkedinIcon,
+      color: "#0A66C2",
+    },
+    {
+      label: "Threads",
+      Button: ThreadsShareButton,
+      Icon: ThreadsIcon,
+      color: "#000000",
+    },
+    {
+      label: "Reddit",
+      Button: RedditShareButton,
+      Icon: RedditIcon,
+      color: "#FF4500",
+    },
+    {
+      label: "Email",
+      Button: EmailShareButton,
+      Icon: EmailIcon,
+      color: "#7D7D7D",
+    },
+  ];

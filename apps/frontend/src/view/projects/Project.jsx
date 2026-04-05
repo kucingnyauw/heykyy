@@ -1,6 +1,7 @@
 /**
- * @fileoverview Main container component for the Projects page.
- * Handles the display of the project grid, dynamic category filtering, search functionality, and pagination.
+ * @fileoverview Komponen utama untuk halaman Projects.
+ * Mengelola tampilan daftar proyek, filter kategori horizontal dengan infinite scroll,
+ * fungsi pencarian, paginasi, serta integrasi ornamen dekorasi visual.
  */
 
 import React, {
@@ -9,60 +10,97 @@ import React, {
   useRef,
   useCallback,
   useMemo,
-  memo,
 } from "react";
-import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
+import { Filter } from "lucide-react";
 
 import {
   Box,
   Chip,
   useTheme,
   alpha,
-  useMediaQuery,
   Skeleton,
   Typography,
   Badge,
+  Grid,
+  Container,
+  Stack,
 } from "@mui/material";
-import { Filter } from "lucide-react";
 
 import {
-  AppFlexLayout,
-  IconButton,
   AppInput,
-  AppSectionLayout,
   AppPopper,
   AppCheckBox,
-  AppProjectCard,
-  AppGridLayout,
   AppPagination,
+  IconButton,
 } from "@heykyy/components";
 
-import { getCategories } from "../../service/category-service";
-import { getProjects } from "../../service/project-service";
-import SEO from "../../data/seo";
+import { ProjectCard } from "@ui/card";
+import { ProjectSkeleton } from "@ui/skeleton";
+import {
+  GridPlusDeco,
+  HashGlowDeco,
+  DotGridDeco,
+  CrossDeco,
+  BoxDeco,
+  HashDashedDeco,
+} from "@ui/decoration";
 
-import GridPlusDeco from "../../ui-components/GridPlusDeco";
-import HashGlowDeco from "../../ui-components/HashGlowDeco";
-import ProjectCardSkeleton from "./components/ProjectCardSkeleton";
-import ProjectEmptyState from "./components/ProjectEmptyState";
-import { DateUtils, NumberUtils } from "@heykyy/utils-frontend";
+import { getCategories } from "@api/category-api";
+import { getProjects } from "@api/project-api";
+
+import { STALE_TIME } from "@heykyy/constant";
+import { useDevice } from "@hooks/use-device";
+import SEO from "@data/seo";
+import { useAppTheme } from "@hooks/use-app-theme";
 
 /**
- * Renders the main Projects page.
- * Integrates search, horizontal scrollable category chips, and a popper-based sorting filter.
+ * Komponen untuk menampilkan status kosong ketika proyek tidak ditemukan.
  *
- * @returns {JSX.Element} The assembled projects view.
+ * @component
+ * @returns {JSX.Element} Tampilan empty state.
+ */
+const ProjectEmptyState = () => (
+  <Stack
+    direction="column"
+    alignItems="center"
+    justifyContent="center"
+    spacing={2}
+    sx={{
+      width: "100%",
+      minHeight: "50vh",
+      textAlign: "center",
+      position: "relative",
+      zIndex: 1,
+      px: { xs: 2, sm: 4 },
+    }}
+  >
+    <Typography variant="h5" fontWeight="bold">
+      No Projects Found
+    </Typography>
+    <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 400 }}>
+      It looks like there are no projects available at the moment. Try adjusting
+      your search or filter to find what you're looking for.
+    </Typography>
+  </Stack>
+);
+
+/**
+ * Komponen utama halaman Projects.
+ *
+ * @component
+ * @returns {JSX.Element} Halaman proyek dengan fungsionalitas filter, pencarian, dan dekorasi visual.
  */
 const Project = () => {
   const theme = useTheme();
-  const navigate = useNavigate();
-  const scrollRef = useRef(null);
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const isDark = theme.palette.mode === "dark";
 
-  const limit = useMemo(() => ({ category: 200, projects: 6 }), []);
+  const scrollRef = useRef(null);
+  const { isMobile } = useDevice();
+  const { isDark } = useAppTheme();
+
+  const LIMIT_PROJECTS = 6;
 
   const [pageVal, setPageVal] = useState({ projects: 1 });
   const [searchTemp, setSearchTemp] = useState("");
@@ -71,10 +109,7 @@ const Project = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [activeFilter, setActiveFilter] = useState(null);
 
-  const projectSEO = useMemo(
-    () => SEO.find((item) => item.page === "projects"),
-    []
-  );
+  const projectSEO = SEO.find((item) => item.page === "projects");
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -127,17 +162,33 @@ const Project = () => {
     };
   }, [isMobile]);
 
-  const { data: categoryData, isLoading: categoryLoading } = useQuery({
-    queryKey: ["category-list", limit.category],
-    queryFn: () => getCategories(1, limit.category, "PROJECT"),
-    staleTime: 60000,
+  const {
+    data: categoryData,
+    isLoading: categoryLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["category-list", "PROJECT"],
+    queryFn: ({ pageParam = 1 }) =>
+      getCategories({
+        page: pageParam,
+        limit: 10,
+        type: "PROJECT",
+      }),
+    getNextPageParam: (lastPage) => {
+      const totalPages = lastPage?.metadata?.totalPages || 1;
+      const currentPage = lastPage?.metadata?.page || 1;
+      return currentPage < totalPages ? currentPage + 1 : undefined;
+    },
+    staleTime: STALE_TIME,
   });
 
   const { data: projectData, isLoading: projectLoading } = useQuery({
     queryKey: [
       "project-list",
       pageVal.projects,
-      limit.projects,
+      LIMIT_PROJECTS,
       searchVal,
       selectedCategoryId,
       activeFilter,
@@ -145,24 +196,31 @@ const Project = () => {
     queryFn: () =>
       getProjects(
         pageVal.projects,
-        limit.projects,
+        LIMIT_PROJECTS,
         searchVal,
         selectedCategoryId,
         activeFilter
       ),
-    staleTime: 60000,
+    staleTime: STALE_TIME,
   });
 
   const categories = useMemo(() => {
-    return Array.isArray(categoryData?.data) ? categoryData.data : [];
+    return categoryData?.pages.flatMap((page) => page.data || []) || [];
   }, [categoryData]);
 
-  const projects = useMemo(
-    () => (Array.isArray(projectData?.data) ? projectData.data : []),
-    [projectData]
-  );
-  
-  const pagination = useMemo(() => projectData?.metadata || {}, [projectData]);
+  const projects = Array.isArray(projectData?.data) ? projectData.data : [];
+  const pagination = projectData?.metadata || {};
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    if (scrollWidth - scrollLeft - clientWidth < 50) {
+      if (hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleProjectPageChange = useCallback((_, value) => {
     setPageVal((prev) => ({ ...prev, projects: value }));
@@ -178,6 +236,7 @@ const Project = () => {
     (event) => setAnchorEl(event.currentTarget),
     []
   );
+
   const handleFilterClose = useCallback(() => setAnchorEl(null), []);
 
   const handleToggleFilter = useCallback(
@@ -188,51 +247,170 @@ const Project = () => {
     []
   );
 
-  const handleCardClick = useCallback(
-    (slug) => navigate(`/project/${slug}`),
-    [navigate]
-  );
+  const handleCardClick = useCallback((slug) => {
+    // Tambahkan logika navigasi ke detail project di sini
+  }, []);
 
   const open = Boolean(anchorEl);
+
+
+  const getChipStyle = (isSelected) => ({
+    flexShrink: 0,
+    height: 28, // Sedikit lebih tinggi dari default 24px agar pas untuk tap
+    borderRadius: theme.shape.borderRadius , // Radius agak kaku khas shadcn (rounded-md/lg)
+    fontWeight: 400, // Menghindari font tebal (sesuai tipografi theme)
+    fontSize: theme.typography.body2.fontSize, // Pakai ukuran xs/sm bawaan theme
+    
+    // Menggunakan transisi bawaan dari tema aplikasimu
+    transition: theme.transitions.create(
+      ["background-color", "color", "border-color"],
+      { duration: theme.transitions.duration.shorter }
+    ),
+    
+    // Shadcn Active: Background mengikuti text.primary (hitam/putih kontras)
+    // Shadcn Inactive: Transparan
+    bgcolor: isSelected ? "text.primary" : "transparent",
+    
+    // Teks menyesuaikan background agar tetap terbaca jelas
+    color: isSelected ? "background.default" : "text.secondary",
+    
+    // Menggunakan ketebalan 0.5px yang wajib di temamu
+    border: "0.5px solid",
+    borderColor: isSelected ? "text.primary" : "divider",
+    
+    "&:hover": {
+      // Hover Active: Sedikit transparan (opacity 85%)
+      // Hover Inactive: Menggunakan warna "muted" bawaan temamu
+      bgcolor: isSelected 
+        ? alpha(theme.palette.text.primary, 0.85) 
+        : theme.palette.custom.surface.muted,
+      color: isSelected 
+        ? "background.default" 
+        : "text.primary",
+    },
+    
+    "& .MuiChip-label": {
+      px: 1.5,
+    },
+  });
+
 
   return (
     <>
       <Helmet>
         <title>{projectSEO?.title}</title>
-        {projectSEO?.description && <meta name="description" content={projectSEO.description} />}
-        {projectSEO?.robots && <meta name="robots" content={projectSEO.robots} />}
-        {projectSEO?.canonical && <link rel="canonical" href={projectSEO.canonical} />}
+        {projectSEO?.description && (
+          <meta name="description" content={projectSEO.description} />
+        )}
+        {projectSEO?.robots && (
+          <meta name="robots" content={projectSEO.robots} />
+        )}
+        {projectSEO?.canonical && (
+          <link rel="canonical" href={projectSEO.canonical} />
+        )}
       </Helmet>
 
-      <AppFlexLayout direction="column" gap={5}>
-        <Box
+      <Container
+        maxWidth="xl"
+        sx={{
+          position: "relative",
+          minHeight: "80vh",
+          py: { xs: 3, md: 5 },
+          px: { xs: 2, sm: 3, md: 4 },
+        }}
+      >
+        {/* DEKORASI */}
+        <HashDashedDeco
           sx={{
-            position: "sticky",
-            top: {xs : 5 ,md : 24},
-            width: { xs: "85%", md: "87%" },
-            boxSizing: "border-box",
-            mx: { xs: 2, md: "auto" },
-            zIndex: theme.zIndex.appBar - 1, 
+            position: "absolute",
+            top: 0,
+            right: { xs: "-5%", md: "5%" },
+            zIndex: 0,
+            opacity: 0.6,
           }}
+        />
+        <GridPlusDeco
+          sx={{
+            position: "absolute",
+            top: "5%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 0,
+          }}
+        />
+        <HashGlowDeco
+          sx={{
+            position: "absolute",
+            top: "20%",
+            left: "-2%",
+            transform: "scale(0.8)",
+            opacity: 0.4,
+            zIndex: 0,
+          }}
+        />
+        <CrossDeco
+          sx={{
+            position: "absolute",
+            top: "15%",
+            right: "8%",
+            transform: "scale(1.2)",
+            zIndex: 0,
+            opacity: 0.7,
+          }}
+        />
+        <DotGridDeco
+          sx={{
+            position: "absolute",
+            bottom: "10%",
+            right: "2%",
+            zIndex: 0,
+            opacity: 0.5,
+          }}
+        />
+        <BoxDeco
+          sx={{
+            position: "absolute",
+            bottom: "25%",
+            left: "5%",
+            zIndex: 0,
+            opacity: 0.4,
+            transform: "rotate(15deg)",
+          }}
+        />
+
+        <Stack
+          direction="column"
+          spacing={{ xs: 3, md: 4, lg: 5 }}
+          sx={{ position: "relative", zIndex: 1 }}
         >
-          <AppFlexLayout
-            direction={isMobile ? "column" : "row"}
-            align={isMobile ? "stretch" : "center"}
-            justify={isMobile ? "flex-start" : "space-between"}
-            gap={isMobile ? 2 : 0}
+          {/* HEADER SECTION */}
+          <Box
             sx={{
-              position: "relative",
-              overflow: "hidden",
-              borderRadius: theme.shape.borderRadius,
-              backgroundColor: alpha(theme.palette.background.paper, 0.75),
-              backdropFilter: "blur(12px)",
-              border: `0.5px solid ${theme.palette.divider}`,
-              boxShadow: theme.shadows[1],
-              p: { xs: 1.5, md: 2 },
+              position: "sticky",
+              top: { xs: 5, md: 24 },
+              width: "100%",
+              boxSizing: "border-box",
+              zIndex: theme.zIndex.appBar - 1,
             }}
           >
-            {isDark && (
-              <>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", md: "row" },
+                alignItems: { xs: "stretch", md: "center" },
+                justifyContent: "space-between",
+                gap: { xs: 2, md: 0 },
+                position: "relative",
+                overflow: "hidden",
+                borderRadius: theme.shape.borderRadius,
+                backgroundColor: alpha(theme.palette.background.paper, 0.75),
+                backdropFilter: "blur(12px)",
+                border: `0.5px solid ${theme.palette.divider}`,
+                boxShadow: theme.shadows[1],
+                p: { xs: 2, sm: 2.5 },
+              }}
+            >
+              {isDark && (
                 <Box
                   sx={{
                     position: "absolute",
@@ -242,229 +420,229 @@ const Project = () => {
                     height: 120,
                     borderRadius: "50%",
                     zIndex: -1,
-                    background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.08)} 0%, transparent 70%)`,
+                    background: `radial-gradient(circle, ${alpha(
+                      theme.palette.primary.main,
+                      0.08
+                    )} 0%, transparent 70%)`,
                   }}
                 />
-              </>
-            )}
+              )}
 
-            {/* --- Category Chips List --- */}
-            <Box sx={{ order: { xs: 2, md: 1 }, flex: 1, minWidth: 0 }}>
-              <Box
-                ref={scrollRef}
-                sx={{
-                  display: "flex",
-                  gap: 1.25,
-                  overflowX: "auto",
-                  overflowY: "hidden",
-                  scrollbarWidth: "none",
-                  "&::-webkit-scrollbar": { display: "none" },
-                  cursor: isMobile ? "auto" : "grab",
-                  py: 0.5,
-                }}
-              >
-                {!categoryLoading && (
-                  <Chip
-                    label="All"
-                    clickable
-                    onClick={() => handleSelectCategory(null)}
-                    sx={{
-                      flexShrink: 0,
-                      fontWeight: selectedCategoryId === null ? 600 : 450,
-                      transition: "all 0.2s ease",
-                      bgcolor: selectedCategoryId === null ? theme.palette.primary.main : theme.palette.background.paper,
-                      color: selectedCategoryId === null ? theme.palette.primary.contrastText : theme.palette.text.secondary,
-                      border: `0.5px solid ${selectedCategoryId === null ? theme.palette.primary.main : theme.palette.divider}`,
-                      "&:hover": {
-                        bgcolor: selectedCategoryId === null ? theme.palette.primary.dark : theme.palette.action.hover,
-                      },
-                    }}
-                  />
-                )}
-
-                {categoryLoading
-                  ? [...Array(5)].map((_, i) => (
-                      <Skeleton
-                        key={i}
-                        variant="rounded"
-                        width={70}
-                        height={24}
-                        sx={{
-                          flexShrink: 0,
-                          borderRadius: '12px',
-                        }}
-                      />
-                    ))
-                  : categories.map((item) => (
-                      <Chip
-                        key={item.id}
-                        label={item.name}
-                        clickable
-                        onClick={() => handleSelectCategory(item.id)}
-                        sx={{
-                          flexShrink: 0,
-                          fontWeight: selectedCategoryId === item.id ? 600 : 450,
-                          transition: "all 0.2s ease",
-                          bgcolor: selectedCategoryId === item.id ? theme.palette.primary.main : theme.palette.background.paper,
-                          color: selectedCategoryId === item.id ? theme.palette.primary.contrastText : theme.palette.text.secondary,
-                          border: `0.5px solid ${selectedCategoryId === item.id ? theme.palette.primary.main : theme.palette.divider}`,
-                          "&:hover": {
-                            bgcolor: selectedCategoryId === item.id ? theme.palette.primary.dark : theme.palette.action.hover,
-                          },
-                        }}
-                      />
-                    ))}
-              </Box>
-            </Box>
-
-            {/* Spacer ditingkatkan menjadi 10% untuk Desktop */}
-            {!isMobile && <Box sx={{ order: 2, width: "10%", flexShrink: 0 }} />}
-
-            {/* --- Input & Filter Section --- */}
-            <Box
-              sx={{
-                order: { xs: 1, md: 3 },
-                width: { xs: "100%", md: "340px" },
-                flexShrink: 0,
-              }}
-            >
-              <AppFlexLayout direction="row" gap={1.5} align="center">
-                
-                <Box sx={{ flexGrow: 1 }}>
-                  <AppInput
-                    placeholder="Search projects..."
-                    value={searchTemp}
-                    onChange={(e) => setSearchTemp(e.target.value)}
-                    fullWidth
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        bgcolor: "background.paper",
-                      },
-                    }}
-                  />
-                </Box>
-
-                <Badge 
-                  color="primary" 
-                  variant="dot" 
-                  invisible={!activeFilter}
+              {/* KATEGORI (Chips) */}
+              <Box sx={{ order: { xs: 2, md: 1 }, flex: 1, minWidth: 0 }}>
+                <Box
+                  ref={scrollRef}
+                  onScroll={handleScroll}
                   sx={{
-                    "& .MuiBadge-badge": {
-                      right: 4,
-                      top: 4,
-                    }
+                    display: "flex",
+                    gap: 1.25,
+                    overflowX: "auto",
+                    overflowY: "hidden",
+                    scrollbarWidth: "none",
+                    "&::-webkit-scrollbar": { display: "none" },
+                    cursor: isMobile ? "auto" : "grab",
+                    py: 0.5,
                   }}
                 >
-                  <IconButton
-                    onClick={handleFilterClick}
-                    icon={<Filter size={18} color={activeFilter ? theme.palette.primary.main : theme.palette.text.primary} />}
-                    sx={{
-                      width: 42,
-                      height: 42,
-                      flexShrink: 0,
-                      bgcolor: open ? "action.selected" : "background.paper",
-                      borderRadius: "12px",
-                      border: `0.5px solid ${activeFilter ? theme.palette.primary.main : theme.palette.divider}`,
-                      "&:hover": { bgcolor: "action.hover" },
-                    }}
-                  />
-                </Badge>
-              </AppFlexLayout>
+                  {!categoryLoading && (
+                    <Chip
+                      label="All"
+                      clickable
+                      onClick={() => handleSelectCategory(null)}
+                      sx={getChipStyle(selectedCategoryId === null)}
+                    />
+                  )}
 
-              <AppPopper
-                open={open}
-                anchorEl={anchorEl}
-                onClose={handleFilterClose}
-                placement="bottom-end"
-                offset={[0, 16]}
+                  {categoryLoading
+                    ? [...Array(10)].map((_, i) => (
+                        <Skeleton
+                          key={`cat-skel-${i}`}
+                          variant="rounded"
+                          width={70}
+                          height={32}
+                          sx={{ flexShrink: 0, borderRadius: "10px" }}
+                        />
+                      ))
+                    : categories.map((item) => (
+                        <Chip
+                          key={item.id}
+                          label={item.name}
+                          clickable
+                          onClick={() => handleSelectCategory(item.id)}
+                          sx={getChipStyle(selectedCategoryId === item.id)}
+                        />
+                      ))}
+
+                  {isFetchingNextPage &&
+                    [...Array(3)].map((_, i) => (
+                      <Skeleton
+                        key={`cat-more-skel-${i}`}
+                        variant="rounded"
+                        width={70}
+                        height={32}
+                        sx={{ flexShrink: 0, borderRadius: "10px" }}
+                      />
+                    ))}
+                </Box>
+              </Box>
+
+              {/* SPACER KHUSUS DESKTOP (5%) */}
+              <Box
+                sx={{
+                  order: { xs: 3, md: 2 },
+                  display: { xs: "none", md: "block" },
+                  width: "5%",
+                  flexShrink: 0,
+                }}
+              />
+
+              {/* PENCARIAN & FILTER */}
+              <Box
+                sx={{
+                  order: { xs: 1, md: 3 },
+                  width: { xs: "100%", md: "340px" },
+                  flexShrink: 0,
+                }}
               >
-                <AppFlexLayout
-                  direction="column"
-                  align="flex-start"
-                  gap={1}
-                  sx={{ p: 2, minWidth: 160 }}
-                >
-                  <Typography
-                    variant="subtitle2"
-                    color="text.secondary"
-                    sx={{ mb: 0.5, fontSize: theme.typography.body2.fontSize }}
-                  >
-                    Sort by
-                  </Typography>
-                  <AppCheckBox
-                    value={activeFilter === "most_liked"}
-                    onChange={handleToggleFilter("most_liked")}
-                    label="Most Liked"
-                  />
-                  <AppCheckBox
-                    value={activeFilter === "popular"}
-                    onChange={handleToggleFilter("popular")}
-                    label="Most Viewed"
-                  />
-                </AppFlexLayout>
-              </AppPopper>
-            </Box>
-          </AppFlexLayout>
-        </Box>
-
-        <AppSectionLayout
-          paddingY={0}
-          sx={{ position: "relative", minHeight: "50vh", mt: { xs: 2, md: 4 } }}
-        >
-          <GridPlusDeco
-            sx={{ top: "10%", left: "50%", transform: "translateX(-50%)" }}
-          />
-          <HashGlowDeco
-            sx={{
-              top: "40%",
-              left: "5%",
-              transform: "scale(0.8)",
-              opacity: 0.4,
-            }}
-          />
-
-          {!projectLoading && projects.length === 0 ? (
-            <ProjectEmptyState />
-          ) : (
-            <AppGridLayout
-              columns={{ xs: "1fr", sm: "1fr", md: "repeat(3, 1fr)" }}
-              gap={4}
-            >
-              {projectLoading
-                ? [...Array(6)].map((_, i) => <ProjectCardSkeleton key={i} />)
-                : projects.map((project) => (
-                    <AppProjectCard
-                      key={project.id}
-                      project={{
-                        ...project,
-                        createdAt: DateUtils.formatDate(project.createdAt),
-                        stats: {
-                          ...project?.stats,
-                          views: NumberUtils.views(project?.stats?.views),
+                <Stack direction="row" spacing={1.5} alignItems="center">
+                  <Box sx={{ flexGrow: 1 }}>
+                    <AppInput
+                      placeholder="Search projects..."
+                      value={searchTemp}
+                      onChange={(e) => setSearchTemp(e.target.value)}
+                      fullWidth
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          bgcolor: "background.paper",
                         },
                       }}
-                      onClick={handleCardClick}
                     />
-                  ))}
-            </AppGridLayout>
-          )}
-        </AppSectionLayout>
+                  </Box>
 
-        {!projectLoading && pagination.totalPages > 1 && (
-          <AppSectionLayout paddingY={{ md: 2 }}>
-            <AppFlexLayout direction="column" align="center" justify="center">
-              <AppPagination
-                count={pagination.totalPages}
-                page={pageVal.projects}
-                onChange={handleProjectPageChange}
-                size={isMobile ? "small" : "medium"}
-              />
-            </AppFlexLayout>
-          </AppSectionLayout>
-        )}
-      </AppFlexLayout>
+                  <Badge
+                    color="primary"
+                    variant="dot"
+                    invisible={!activeFilter}
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        right: 4,
+                        top: 4,
+                      },
+                    }}
+                  >
+                    <IconButton
+                      onClick={handleFilterClick}
+                      icon={
+                        <Filter
+                          size={18}
+                          color={
+                            activeFilter
+                              ? theme.palette.primary.main
+                              : theme.palette.text.primary
+                          }
+                        />
+                      }
+                      sx={{
+                        width: 42,
+                        height: 42,
+                        flexShrink: 0,
+                        bgcolor: open ? "action.selected" : "background.paper",
+                        borderRadius: "12px",
+                        border: `1px solid ${
+                          activeFilter
+                            ? theme.palette.primary.main
+                            : alpha(theme.palette.divider, 0.5)
+                        }`,
+                        "&:hover": { bgcolor: "action.hover" },
+                      }}
+                    />
+                  </Badge>
+                </Stack>
+
+                <AppPopper
+                  open={open}
+                  anchorEl={anchorEl}
+                  onClose={handleFilterClose}
+                  placement="bottom-end"
+                  offset={[10, 30]}
+                >
+                  <Stack
+                    direction="column"
+                    alignItems="flex-start"
+                    spacing={1}
+                    sx={{ p: 2, minWidth: 160 }}
+                  >
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      sx={{
+                        mb: 0.5,
+                        fontSize: theme.typography.body2.fontSize,
+                      }}
+                    >
+                      Sort by
+                    </Typography>
+                    <AppCheckBox
+                      value={activeFilter === "most_liked"}
+                      onChange={handleToggleFilter("most_liked")}
+                      label="Most Liked"
+                    />
+                    <AppCheckBox
+                      value={activeFilter === "popular"}
+                      onChange={handleToggleFilter("popular")}
+                      label="Most Viewed"
+                    />
+                  </Stack>
+                </AppPopper>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* PROJECT GRID */}
+          <Box sx={{ width: "100%" }}>
+            {!projectLoading && projects.length === 0 ? (
+              <ProjectEmptyState />
+            ) : (
+              <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+                {projectLoading
+                  ? [...Array(LIMIT_PROJECTS)].map((_, i) => (
+                      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={i}>
+                        <ProjectSkeleton />
+                      </Grid>
+                    ))
+                  : projects.map((project) => (
+                      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={project.id}>
+                        <ProjectCard
+                          project={project}
+                          onClick={handleCardClick}
+                        />
+                      </Grid>
+                    ))}
+              </Grid>
+            )}
+          </Box>
+
+          {/* PAGINATION */}
+          {!projectLoading && pagination.totalPages > 1 && (
+            <Box sx={{ pt: 2, pb: 4, width: "100%" }}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <AppPagination
+                  count={pagination.totalPages}
+                  page={pageVal.projects}
+                  onChange={handleProjectPageChange}
+                  size={isMobile ? "small" : "medium"}
+                />
+              </Stack>
+            </Box>
+          )}
+        </Stack>
+      </Container>
     </>
   );
 };
 
-export default memo(Project);
+export default Project;

@@ -1,14 +1,22 @@
-import React, { useMemo, memo } from "react";
-import { Helmet } from "react-helmet";
-import { Typography, Box } from "@mui/material";
-import { AppFlexLayout, AppBasicCard } from "@heykyy/components";
+/**
+ * @fileoverview Komponen halaman Privacy Policy.
+ * Merender konten kebijakan privasi menggunakan arsitektur layout standar 
+ * seperti Container dan Stack, serta komponen BaseCard untuk daftar item.
+ * Terintegrasi dengan React Helmet untuk injeksi metadata SEO.
+ */
 
-import PrivacyPolicyMock from "../../mock/privacy-mock";
-import SEO from "../../data/seo";
+import React, { useMemo } from "react";
+import { Helmet } from "react-helmet";
+import { Stack, Container, Typography, Box } from "@mui/material";
+import { BaseCard } from "@ui/card";
+import SEO from "@data/seo";
+import PrivacyPolicyMock from "@mock/privacy-mock";
 
 /**
- * Komponen halaman Privacy Policy.
- * @returns {JSX.Element}
+ * Komponen utama untuk halaman Privacy Policy.
+ *
+ * @component
+ * @returns {JSX.Element} Halaman Privacy Policy yang sudah dirakit secara utuh.
  */
 const Privacy = () => {
   const privacySEO = useMemo(
@@ -29,8 +37,6 @@ const Privacy = () => {
         {privacySEO?.canonical && (
           <link rel="canonical" href={privacySEO.canonical} />
         )}
-
-        {/* Open Graph */}
         {privacySEO?.og?.title && (
           <meta property="og:title" content={privacySEO.og.title} />
         )}
@@ -49,8 +55,6 @@ const Privacy = () => {
         {privacySEO?.og?.site_name && (
           <meta property="og:site_name" content={privacySEO.og.site_name} />
         )}
-
-        {/* Twitter */}
         {privacySEO?.twitter?.card && (
           <meta name="twitter:card" content={privacySEO.twitter.card} />
         )}
@@ -71,29 +75,31 @@ const Privacy = () => {
         )}
       </Helmet>
 
-      <AppFlexLayout direction="column" align="flex-start" gap={2}>
-        {/* Title & Subtitle Wrapper */}
-        <Box sx={{ textAlign: "left", mb: 1 }}>
-          <Typography variant="h3" component="h1" gutterBottom>
-            Privacy Policy
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Learn how we handle, collect, and protect your personal information when you use this portfolio site.
-          </Typography>
-        </Box>
+      <Container maxWidth="lg">
+        <Stack direction="column" alignItems="stretch" spacing={4}>
+          <Box sx={{ textAlign: "left", mb: 1 }}>
+            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
+              Privacy Policy
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 700 }}>
+              Learn how we handle, collect, and protect your personal information when you use this portfolio site.
+            </Typography>
+          </Box>
 
-        {/* Privacy Policy List */}
-        {PrivacyPolicyMock.map((item, index) => (
-          <AppBasicCard 
-            key={index} 
-            title={item.heading} 
-            subtitle={item.content} 
-            icon={item.icon ? <item.icon /> : null} 
-          />
-        ))}
-      </AppFlexLayout>
+          <Stack direction="column" spacing={2}>
+            {PrivacyPolicyMock.map((item, index) => (
+              <BaseCard 
+                key={index} 
+                title={item.heading} 
+                subtitle={item.content} 
+                icon={item.icon ? <item.icon size={24} /> : null} 
+              />
+            ))}
+          </Stack>
+        </Stack>
+      </Container>
     </>
   );
 };
 
-export default memo(Privacy);
+export default Privacy;

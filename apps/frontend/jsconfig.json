@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+      "baseUrl": "src",
+      "paths": {
+        "@api/*": ["api/*"],
+        "@data/*": ["data/*"],
+        "@mock/*": ["mock/*"],
+        "@view/*": ["view/*"],
+        "@ui/*": ["ui-components/*"] ,
+        "@hooks/*" : ["hooks/*"] ,
+        "@styles/*" : ["styles/*"],
+        "@assets/*" : ["assets/*"] ,
+        "@utils/*" : ["utils/*"]
+      },
+      "module": "ESNext",
+      "moduleResolution": "Node",
+      "target": "ESNext",
+      "jsx": "react-jsx",
+      "types": []
+    },
+    "include": [
+      "src/**/*"
+    ],
+    "exclude": [
+      "node_modules",
+      "dist",
+      "trash"
+    ]
+  }

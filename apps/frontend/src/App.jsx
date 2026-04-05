@@ -1,40 +1,57 @@
-import React, { useEffect, useMemo } from "react";
-import { CssBaseline, ThemeProvider } from "@mui/material";
-import { getTheme } from "./Theme";
-import { RouterProvider } from "react-router-dom";
-import router from "./routes";
-import { useSelector, useDispatch } from "react-redux";
-import { getThemeMode } from "./store/theme/theme-selectors";
-import { getCurrentUser } from "./store/auth/auth-thunk";
-import NavigationScroll from "./layout/NavigationScroll";
+import React, { useState } from "react";
+import { CssBaseline, ThemeProvider, Box, Typography } from "@mui/material";
+import { Share2 } from "lucide-react"; // Import icon untuk tombol share
+
+import Home from "@view/home/Home";
+import { getTheme } from "Theme";
+import { IconButton } from "@heykyy/components";
+import ShareDialog from "@ui/dialog/ShareDialog";
 
 const App = () => {
-  const dispatch = useDispatch();
-  const mode = useSelector(getThemeMode);
-
-  const theme = useMemo(() => getTheme(mode), [mode]);
-
-  useEffect(() => {
-    dispatch(getCurrentUser());
-  }, [dispatch]);
-
-  /**
-   * Synchronize theme-color meta and HTML data-theme with current MUI theme
-   */
-  useEffect(() => {
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) {
-      meta.setAttribute("content", theme.palette.background.default);
-    }
-    document.documentElement.setAttribute("data-theme", mode);
-  }, [mode, theme.palette.background.default]);
+  const theme = getTheme("light");
+  
+  // State untuk mengontrol visibilitas ShareDialog
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <NavigationScroll>
-        <RouterProvider router={router} />
-      </NavigationScroll>
+
+      {/* Kontainer untuk simulasi tombol di tengah layar */}
+      <Box 
+        sx={{ 
+          display: "flex", 
+          flexDirection: "column", 
+          alignItems: "center", 
+          justifyContent: "center", 
+          height: "100vh",
+          gap: 2 
+        }}
+      >
+        <Typography variant="h6">
+          Klik tombol di bawah untuk mencoba Share Dialog
+        </Typography>
+
+        {/* Tombol pemicu */}
+        <IconButton 
+          icon={<Share2 size={20} />} 
+          onClick={() => setIsShareOpen(true)} 
+          sx={{
+            bgcolor: "primary.main",
+            color: "primary.contrastText",
+            "&:hover": { bgcolor: "primary.dark" }
+          }}
+        />
+      </Box>
+
+      {/* Pemanggilan ShareDialog */}
+      <ShareDialog 
+        open={isShareOpen} 
+        onClose={() => setIsShareOpen(false)} 
+        url="https://portofolio.heykyy.com/project/awesome-app" 
+        title="Lihat project keren ini dari HeyKyy!" 
+      />
+
     </ThemeProvider>
   );
 };

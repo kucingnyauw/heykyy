@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "../../lib/supabase";
-import { getMe } from "../../service/user-services";
+import { getCurrentUser } from "@api/user-api";
 
 /**
  * Initiates the authentication process by sending a magic link to the provided email address.
@@ -39,11 +39,11 @@ export const signInWithOtp = createAsyncThunk(
  *
  * @returns {Promise<Object>} The current user's profile object.
  */
-export const getCurrentUser = createAsyncThunk(
+export const getUser = createAsyncThunk(
   "auth/getCurrentUser",
   async (_, { rejectWithValue }) => {
     try {
-      const user = await getMe();
+      const user = await getCurrentUser();
       return user;
     } catch (err) {
       return rejectWithValue(null);

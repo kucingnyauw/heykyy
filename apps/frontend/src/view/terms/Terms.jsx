@@ -1,14 +1,22 @@
-import React, { useMemo, memo } from "react";
-import { Helmet } from "react-helmet";
-import { Typography, Box } from "@mui/material";
-import { AppFlexLayout, AppBasicCard } from "@heykyy/components";
+/**
+ * @fileoverview Komponen halaman Terms of Service.
+ * Merender konten syarat dan ketentuan menggunakan arsitektur layout standar 
+ * seperti Container dan Stack, serta komponen BaseCard untuk daftar item.
+ * Terintegrasi dengan React Helmet untuk injeksi metadata SEO.
+ */
 
-import TermsMock from "../../mock/terms-mock";
-import SEO from "../../data/seo";
+import React, { useMemo } from "react";
+import { Helmet } from "react-helmet";
+import { Stack, Container, Typography, Box } from "@mui/material";
+import { BaseCard } from "@ui/card";
+import SEO from "@data/seo";
+import TermsMock from "@mock/terms-mock";
 
 /**
- * Komponen halaman Terms of Service.
- * @returns {JSX.Element}
+ * Komponen utama untuk halaman Terms of Service.
+ *
+ * @component
+ * @returns {JSX.Element} Halaman Terms of Service yang sudah dirakit secara utuh.
  */
 const Terms = () => {
   const termsSEO = useMemo(
@@ -29,8 +37,6 @@ const Terms = () => {
         {termsSEO?.canonical && (
           <link rel="canonical" href={termsSEO.canonical} />
         )}
-
-        {/* Open Graph */}
         {termsSEO?.og?.title && (
           <meta property="og:title" content={termsSEO.og.title} />
         )}
@@ -49,8 +55,6 @@ const Terms = () => {
         {termsSEO?.og?.site_name && (
           <meta property="og:site_name" content={termsSEO.og.site_name} />
         )}
-
-        {/* Twitter */}
         {termsSEO?.twitter?.card && (
           <meta name="twitter:card" content={termsSEO.twitter.card} />
         )}
@@ -71,29 +75,31 @@ const Terms = () => {
         )}
       </Helmet>
 
-      <AppFlexLayout direction="column" align="flex-start" gap={2}>
-        {/* Title & Subtitle Wrapper */}
-        <Box sx={{ textAlign: "left", mb: 1 }}>
-          <Typography variant="h3" component="h1" gutterBottom>
-            Terms of Service
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Please read these terms and conditions carefully before using this portfolio website.
-          </Typography>
-        </Box>
+      <Container maxWidth="lg">
+        <Stack direction="column" alignItems="stretch" spacing={4}>
+          <Box sx={{ textAlign: "left", mb: 1 }}>
+            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
+              Terms of Service
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 700 }}>
+              Please read these terms and conditions carefully before using this portfolio website.
+            </Typography>
+          </Box>
 
-        {/* Terms of Service List */}
-        {TermsMock.map((item, index) => (
-          <AppBasicCard 
-            key={index} 
-            title={item.heading} 
-            subtitle={item.content} 
-            icon={item.icon ? <item.icon /> : null} 
-          />
-        ))}
-      </AppFlexLayout>
+          <Stack direction="column" spacing={2}>
+            {TermsMock.map((item, index) => (
+              <BaseCard 
+                key={index} 
+                title={item.heading} 
+                subtitle={item.content} 
+                icon={item.icon ? <item.icon size={24} /> : null} 
+              />
+            ))}
+          </Stack>
+        </Stack>
+      </Container>
     </>
   );
 };
 
-export default memo(Terms);
+export default Terms;

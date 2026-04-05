@@ -1,4 +1,4 @@
-const statisticsMock = [
+const StatisticsMock = [
   {
     id: 1,
     value: 1.5,
@@ -16,4 +16,4 @@ const statisticsMock = [
   },
 ];
 
-export default statisticsMock;
+export default StatisticsMock;
