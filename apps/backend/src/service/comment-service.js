@@ -4,27 +4,14 @@ import {
   createCommentSchema,
   updateCommentSchema,
 } from "../validation/comment-validations.js";
-import { PaginationUtils, ApiError } from "@heykyy/utils-backend";
+import { ApiError, PaginationUtils } from "../utils/index.js";
 import { CommentDto, CommentAdminDto } from "../dtos/comment-dtos.js";
 
-/**
- * Service class for managing blog comments and replies.
- * Supports hierarchical threading, ownership validation, and admin management.
- */
 class CommentService {
-  /**
-   * Provides access to the Prisma ORM client instance.
-   * @returns {import("@prisma/client").PrismaClient}
-   */
   get prisma() {
     return getPrisma();
   }
 
-  /**
-   * Defines the standard database selection structure for comments, including user details and nested replies.
-   * @private
-   * @returns {Object}
-   */
   get #commentSelect() {
     return {
       id: true,
@@ -38,7 +25,7 @@ class CommentService {
           id: true,
           name: true,
           role: true,
-          about : true ,
+          about: true,
           profilePhoto: { select: { url: true } },
         },
       },
@@ -56,7 +43,7 @@ class CommentService {
               id: true,
               name: true,
               role: true,
-              about : true ,
+              about: true,
               profilePhoto: { select: { url: true } },
             },
           },
@@ -66,26 +53,24 @@ class CommentService {
   }
 
   /**
-   * Creates a new comment or reply for a specific blog.
-   *
-   * @param {string} userId - The ID of the user posting the comment.
-   * @param {Object} request - The comment payload (content, optional parentId).
-   * @param {string} blogId - The ID of the blog being commented on.
-   * @returns {Promise<CommentDto>} The newly created comment.
-   * @throws {ApiError} 404 if the blog or parent comment does not exist.
+   * Creates a new comment or reply.
+   * Target type determines if it belongs to a Blog or a Project.
    */
-  async create(userId, request, blogId) {
+  async create(userId, request, targetId, targetType = "BLOG") {
     const payload = validate(createCommentSchema, request);
+    const isBlog = targetType === "BLOG";
 
-    const blog = await this.prisma.blog.findUnique({
-      where: { id: blogId },
+    // Dinamis menentukan model mana yang akan dicek (Blog atau Project)
+    const targetModel = isBlog ? this.prisma.blog : this.prisma.project;
+    const target = await targetModel.findUnique({
+      where: { id: targetId },
       select: { id: true },
     });
 
-    if (!blog) {
+    if (!target) {
       throw new ApiError(
         404,
-        "The blog post you are trying to comment on could not be found. Please refresh and try again."
+        `The ${isBlog ? "blog post" : "project"} you are trying to comment on could not be found.`
       );
     }
 
@@ -93,10 +78,15 @@ class CommentService {
     if (payload.parentId) {
       const parent = await this.prisma.comment.findUnique({
         where: { id: payload.parentId },
-        select: { id: true, parentId: true, blogId: true },
+        select: { id: true, parentId: true, blogId: true, projectId: true },
       });
 
-      if (!parent || parent.blogId !== blogId) {
+      // Pastikan parent comment berada di target yang sama (blog/project yg sama)
+      const isParentValid = isBlog
+        ? parent?.blogId === targetId
+        : parent?.projectId === targetId;
+
+      if (!parent || !isParentValid) {
         throw new ApiError(
           404,
           "The comment you are trying to reply to no longer exists or belongs to a different post."
@@ -110,7 +100,8 @@ class CommentService {
       data: {
         content: payload.content,
         userId,
-        blogId,
+        blogId: isBlog ? targetId : null,
+        projectId: !isBlog ? targetId : null,
         parentId: finalParentId,
       },
       include: {
@@ -128,28 +119,12 @@ class CommentService {
     return new CommentDto(comment, userId);
   }
 
-  /**
-   * Updates the content of an existing comment.
-   *
-   * @param {string} id - The ID of the comment to update.
-   * @param {string} userId - The ID of the user requesting the update.
-   * @param {Object} request - The update payload (content).
-   * @returns {Promise<CommentDto>} The updated comment data.
-   * @throws {ApiError} 404 if not found, 403 if user is not the owner.
-   */
   async update(id, userId, request) {
     const payload = validate(updateCommentSchema, request);
     const comment = await this.prisma.comment.findUnique({ where: { id } });
 
-    if (!comment) {
-      throw new ApiError(404, "We couldn't find the comment you want to edit.");
-    }
-    if (comment.userId !== userId) {
-      throw new ApiError(
-        403,
-        "You only have permission to edit your own comments."
-      );
-    }
+    if (!comment) throw new ApiError(404, "We couldn't find the comment you want to edit.");
+    if (comment.userId !== userId) throw new ApiError(403, "You only have permission to edit your own comments.");
 
     const updated = await this.prisma.comment.update({
       where: { id },
@@ -181,66 +156,49 @@ class CommentService {
     return new CommentDto(updated, userId);
   }
 
-  /**
-   * Deletes a comment. Users can delete their own; Admins can delete any.
-   *
-   * @param {string} id - The ID of the comment to delete.
-   * @param {string} userId - The ID of the user requesting deletion.
-   * @returns {Promise<void>}
-   * @throws {ApiError} 404 if not found, 403 if unauthorized.
-   */
   async delete(id, userId) {
     const comment = await this.prisma.comment.findUnique({
       where: { id },
       include: { user: true },
     });
 
-    if (!comment) {
-      throw new ApiError(
-        404,
-        "The comment you're trying to delete does not exist."
-      );
-    }
+    if (!comment) throw new ApiError(404, "The comment you're trying to delete does not exist.");
 
-    const requester = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+    const requester = await this.prisma.user.findUnique({ where: { id: userId } });
 
     if (requester.role !== "ADMIN" && comment.userId !== userId) {
-      throw new ApiError(
-        403,
-        "You do not have the required permissions to delete this comment."
-      );
+      throw new ApiError(403, "You do not have the required permissions to delete this comment.");
     }
 
     await this.prisma.comment.delete({ where: { id } });
   }
 
   /**
-   * Retrieves a paginated list of top-level comments and their replies for a specific blog slug.
-   *
-   * @param {number} page - Page number.
-   * @param {number} limit - Items per page.
-   * @param {string} slug - The slug of the blog.
-   * @param {string} [currentUserId] - Optional ID of the user viewing the comments.
-   * @returns {Promise<Object>} Object containing comments and pagination metadata.
-   * @throws {ApiError} 404 if the blog is not found.
+   * Mengambil list komentar berdasarkan slug target (Blog/Project).
    */
-  async gets(page, limit, slug, currentUserId) {
+  async gets(page, limit, slug, targetType = "BLOG", currentUserId) {
     const { skip, limit: take } = PaginationUtils.create({ page, limit });
-    const blog = await this.prisma.blog.findUnique({
+    const isBlog = targetType === "BLOG";
+
+    const targetModel = isBlog ? this.prisma.blog : this.prisma.project;
+    const target = await targetModel.findUnique({
       where: { slug },
       select: { id: true },
     });
 
-    if (!blog) {
+    if (!target) {
       throw new ApiError(
         404,
-        "Unable to load comments because the blog post was not found."
+        `Unable to load comments because the ${isBlog ? "blog post" : "project"} was not found.`
       );
     }
 
-    const where = { blogId: blog.id, parentId: null };
+ 
+    const where = {
+      parentId: null,
+      ...(isBlog ? { blogId: target.id } : { projectId: target.id }),
+    };
+
     const [total, comments] = await Promise.all([
       this.prisma.comment.count({ where }),
       this.prisma.comment.findMany({
@@ -260,15 +218,10 @@ class CommentService {
 
   /**
    * Retrieves all user comments for the admin management panel.
-   *
-   * @param {number} page - Page number.
-   * @param {number} limit - Items per page.
-   * @param {string} [search] - Search filter for content or username.
-   * @returns {Promise<Object>} Object containing admin-view comments and metadata.
    */
   async getsAll(page, limit, search, isReplied) {
     const { skip, limit: take } = PaginationUtils.create({ page, limit });
-  
+
     const where = {
       user: { role: "USER" },
       parentId: null,
@@ -276,16 +229,18 @@ class CommentService {
         OR: [
           { content: { contains: search, mode: "insensitive" } },
           { user: { name: { contains: search, mode: "insensitive" } } },
-          { blog: { title: { contains: search, mode: "insensitive" } } }
+          { blog: { title: { contains: search, mode: "insensitive" } } },
+          { project: { title: { contains: search, mode: "insensitive" } } }, // Ditambah untuk project
         ],
       }),
       ...(isReplied !== undefined && {
-        replies: isReplied === "true" 
-          ? { some: { user: { role: "ADMIN" } } } 
-          : { none: { user: { role: "ADMIN" } } }
+        replies:
+          isReplied === "true"
+            ? { some: { user: { role: "ADMIN" } } }
+            : { none: { user: { role: "ADMIN" } } },
       }),
     };
-  
+
     const [total, comments] = await Promise.all([
       this.prisma.comment.count({ where }),
       this.prisma.comment.findMany({
@@ -305,7 +260,9 @@ class CommentService {
               profilePhoto: { select: { url: true } },
             },
           },
+
           blog: { select: { id: true, title: true, slug: true } },
+          project: { select: { id: true, title: true, slug: true } },
           _count: {
             select: {
               replies: { where: { user: { role: "ADMIN" } } },
@@ -314,13 +271,12 @@ class CommentService {
         },
       }),
     ]);
-  
+
     return {
       data: comments.map((c) => new CommentAdminDto(c, c._count.replies > 0)),
       metadata: PaginationUtils.generateMetadata(total, page, take),
     };
   }
-  
 }
 
 export default new CommentService();

@@ -14,7 +14,12 @@ import {
   Stack,
 } from "@mui/material";
 
-import { AppDialog, AppInput, IconButton, AppSnackBar } from "@heykyy/components";
+import {
+  AppDialog,
+  AppInput,
+  IconButton,
+  AppSnackBar,
+} from "@heykyy/components";
 import { Copy, Check, X } from "lucide-react";
 
 import { SHARE_PLATFORMS } from "@utils/share";
@@ -73,15 +78,15 @@ const ShareDialog = ({ open, onClose, url, title }) => {
             alignItems="center"
             sx={{ width: "100%", pt: 1, pb: 0, px: 1 }}
           >
-      <Typography variant="h6" sx={{ fontWeight: 700 }}>
-  Share this content
-</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              Share this content
+            </Typography>
             <IconButton
               size="medium"
               icon={<X size={20} />}
               onClick={onClose}
               sx={{
-                borderRadius : "50%",
+                borderRadius: "50%",
                 color: "text.secondary",
                 "&:hover": {
                   bgcolor: alpha(theme.palette.text.primary, 0.05),

@@ -71,6 +71,7 @@ export const AppSwitch = memo(({ checked, onChange, ...props }) => {
   );
 });
 
+
 AppSwitch.propTypes = {
   checked: PropTypes.bool,
   onChange: PropTypes.func,

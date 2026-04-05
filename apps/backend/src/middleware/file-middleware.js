@@ -1,8 +1,10 @@
-import multer from "multer";
 import crypto from "crypto";
-import { ApiError, sanitizeFileName } from "@heykyy/utils-backend";
+import multer from "multer";
+
+import { MAX_FILE_SIZE, MAX_FILE_UPLOAD } from "@heykyy/constant";
+
 import { getPrisma } from "../application/database.js";
-import { ALLOWED_FILE, MAX_SIZE, MAX_UPLOAD } from "@heykyy/constant";
+import { ApiError, FileUtils } from "../utils/index.js";
 
 /**
  * Configure multer to use memory storage for temporary file handling.
@@ -10,23 +12,22 @@ import { ALLOWED_FILE, MAX_SIZE, MAX_UPLOAD } from "@heykyy/constant";
 const storage = multer.memoryStorage();
 
 /**
- * Maps file categories to their respective maximum allowed sizes.
+ * Maps file categories to their allowed MIME types.
  */
-const typeSizeMap = {
-  image: MAX_SIZE.image,
-  docs: MAX_SIZE.document,
-  video: MAX_SIZE.video,
-};
-
-/**
- * Identifies the file category based on the provided MIME type.
- * @param {string} mimetype - The MIME type of the file.
- * @returns {string|undefined}
- */
-const getFileCategory = (mimetype) => {
-  return Object.keys(ALLOWED_FILE).find((key) =>
-    ALLOWED_FILE[key].includes(mimetype)
-  );
+const ALLOWED_FILE = {
+  image: [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "image/svg+xml",
+  ],
+  docs: [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ],
+  video: ["video/mp4", "video/webm", "video/ogg", "video/quicktime"],
 };
 
 /**
@@ -51,19 +52,16 @@ export const processFile = async (file) => {
     );
   }
 
-  const category = getFileCategory(file.mimetype);
-  const maxSize = category ? typeSizeMap[category] : MAX_SIZE.document;
-
-  if (file.size > maxSize) {
-    const sizeInMB = (maxSize / (1024 * 1024)).toFixed(2);
+  if (file.size > MAX_FILE_SIZE) {
+    const sizeInMB = (MAX_FILE_SIZE / (1024 * 1024)).toFixed(2);
     throw new ApiError(
       400,
-      `The file "${file.originalname}" exceeds the size limit of ${sizeInMB} MB for this file type.`
+      `The file "${file.originalname}" exceeds the maximum size limit of ${sizeInMB} MB.`
     );
   }
 
   return {
-    fileName: sanitizeFileName(file.originalname),
+    fileName: FileUtils.sanitizeFileName(file.originalname),
     buffer: file.buffer,
     mimeType: file.mimetype,
     sizeBytes: file.size,
@@ -99,20 +97,18 @@ export const uploadMultiType = (
     cb(null, true);
   };
 
-  const maxFileSize = Math.max(...types.map((t) => typeSizeMap[t] || 0));
-
   const upload = multer({
     storage,
     fileFilter,
     limits: {
-      fileSize: maxFileSize,
+      fileSize: MAX_FILE_SIZE,
     },
   });
 
   return [
-    MAX_UPLOAD === 1
+    MAX_FILE_UPLOAD === 1
       ? upload.single(fieldName)
-      : upload.array(fieldName, MAX_UPLOAD),
+      : upload.array(fieldName, MAX_FILE_UPLOAD),
     async (req, res, next) => {
       try {
         if (!req.file && (!req.files || req.files.length === 0)) {

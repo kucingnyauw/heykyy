@@ -4,8 +4,7 @@
   "type": "module",
   "workspaces": [
     "apps/*",
-    "packages/*",
-    "packages/utils/*"
+    "packages/*"
   ],
   "scripts": {
     "dev": "turbo dev",
@@ -17,8 +16,6 @@
     "bootstrap": "npm install && turbo prune --force"
   },
   "devDependencies": {
-    "eslint": "^9.39.1",
-    "turbo": "^1.13.4",
-    "typescript": "^6.0.2"
+    "eslint": "^9.39.1"
   }
 }

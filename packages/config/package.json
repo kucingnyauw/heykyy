@@ -1,0 +1,15 @@
+{
+    "name": "@heykyy/config",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "./src/index.js",
+    "exports": {
+      ".": "./src/index.js",
+      "./*": "./src/*.js"
+    },
+    "peerDependencies": {
+      "react": "^18.2.0",
+      "react-syntax-highlighter": "^16.1.0"
+    }
+  }

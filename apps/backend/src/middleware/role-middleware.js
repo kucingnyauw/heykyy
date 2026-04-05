@@ -1,4 +1,4 @@
-import { ApiError } from "@heykyy/utils-backend";
+import { ApiError } from "../utils/error-utils.js";
 
 /**
  * Middleware factory to restrict access based on user roles.

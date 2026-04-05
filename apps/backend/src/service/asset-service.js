@@ -1,7 +1,6 @@
 import { getPrisma } from "../application/database.js";
-import { ApiError, AssetUtils } from "@heykyy/utils-backend";
+import { ApiError, AssetUtils } from "../utils/index.js";
 import { supabase } from "../lib/supabase.js";
-
 
 class AssetService {
   /**

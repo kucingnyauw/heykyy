@@ -1,4 +1,4 @@
-import { AsyncHandler } from "@heykyy/utils-backend";
+import { AsyncHandler } from "../utils/index.js";
 import CertificateService from "../service/certificate-service.js";
 
 /**

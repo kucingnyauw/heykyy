@@ -1,4 +1,4 @@
-import { ApiError } from "@heykyy/utils-backend";
+import { ApiError } from "../utils/index.js";
 
 /**
  * Validates a request payload against a specified Joi schema.

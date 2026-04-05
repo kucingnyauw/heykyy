@@ -1,0 +1,14 @@
+{
+  "name": "@heykyy/utils",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./*": "./src/*.js"
+  },
+  "scripts": {
+    "lint": "eslint \"src/**/*.js\""
+  }
+}

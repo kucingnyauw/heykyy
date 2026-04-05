@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import {
   Dialog,
@@ -37,59 +37,56 @@ export const AppDialog = ({
 }) => {
   const theme = useTheme();
 
-  const dialogSx = useMemo(
-    () => ({
-      "& .MuiDialog-paper": {
-        borderRadius: theme.shape.borderRadius,
-        display: "flex",
-        flexDirection: "column",
-      },
-      ...sx,
-    }),
-    [theme.shape.borderRadius, sx]
-  );
+  const dialogSx = {
+    "& .MuiDialog-paper": {
+      borderRadius: theme.shape.borderRadius,
+      display: "flex",
+      flexDirection: "column",
+    },
+    ...sx,
+  };
 
-  const renderedActions = useMemo(() => {
-    if (!actions) return null;
+  let renderedActions = null;
 
+  if (actions) {
     if (!Array.isArray(actions)) {
-      return <Box>{actions}</Box>;
+      renderedActions = <Box>{actions}</Box>;
+    } else {
+      renderedActions = actions.map((action, index) => {
+        const { label, onClick, variant, disabled, loading, color } = action;
+
+        const buttonContent = loading ? (
+          <CircularProgress size={20} color="inherit" thickness={5} />
+        ) : (
+          label
+        );
+
+        return (
+          <Box key={index} sx={{ ml: 1.5 }}>
+            {variant === "outlined" ? (
+              <OutlinedButton
+                size="extraSmall"
+                onClick={onClick}
+                disabled={disabled || loading}
+                color={color}
+              >
+                {buttonContent}
+              </OutlinedButton>
+            ) : (
+              <FilledButton
+                size="extraSmall"
+                onClick={onClick}
+                disabled={disabled || loading}
+                color={color}
+              >
+                {buttonContent}
+              </FilledButton>
+            )}
+          </Box>
+        );
+      });
     }
-
-    return actions.map((action, index) => {
-      const { label, onClick, variant, disabled, loading, color } = action;
-
-      const buttonContent = loading ? (
-        <CircularProgress size={20} color="inherit" thickness={5} />
-      ) : (
-        label
-      );
-
-      return (
-        <Box key={index} sx={{ ml: 1.5 }}>
-          {variant === "outlined" ? (
-            <OutlinedButton
-              size="extraSmall"
-              onClick={onClick}
-              disabled={disabled || loading}
-              color={color}
-            >
-              {buttonContent}
-            </OutlinedButton>
-          ) : (
-            <FilledButton
-              size="extraSmall"
-              onClick={onClick}
-              disabled={disabled || loading}
-              color={color}
-            >
-              {buttonContent}
-            </FilledButton>
-          )}
-        </Box>
-      );
-    });
-  }, [actions]);
+  }
 
   return (
     <Dialog

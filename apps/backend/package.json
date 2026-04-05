@@ -37,7 +37,6 @@
         "@supabase/supabase-js": "^2.89.0",
         "@upstash/redis": "^1.36.0",
         "@heykyy/constant": "*",
-        "@heykyy/utils-backend": "*",
         "axios": "^1.11.0",
         "cookie-parser": "^1.4.7",
         "cookie-session": "^2.1.1",
@@ -55,7 +54,6 @@
         "sharp": "^0.34.5",
         "winston": "^3.17.0",
         "winston-daily-rotate-file": "^5.0.0",
-        "@faker-js/faker": "^10.2.0",
         "babel-jest": "^29.5.0",
         "jest": "^29.5.0",
         "nodemon": "^3.1.0",
@@ -65,7 +63,6 @@
         "@types/bcrypt": "^5.0.0",
         "@types/express": "^4.17.17",
         "@types/jest": "^29.5.2",
-        "@types/supertest": "^2.0.12",
-            "tsup": "^8.0.2"
+        "@types/supertest": "^2.0.12"
     }
 }

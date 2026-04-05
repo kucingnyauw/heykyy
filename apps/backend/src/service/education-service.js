@@ -1,12 +1,14 @@
-import { PaginationUtils, ApiError } from "@heykyy/utils-backend";
+import { DEFAULT_CACHE_TTL } from "@heykyy/constant";
+
 import { getPrisma } from "../application/database.js";
-import { validate } from "../validation/validation.js";
+import { EducationDto, EducationListDto } from "../dtos/education-dtos.js";
+import { redis } from "../lib/redis.js";
+import { ApiError, PaginationUtils } from "../utils/index.js";
 import {
   createEducationSchema,
   updateEducationSchema,
 } from "../validation/education-validations.js";
-import { EducationDto, EducationListDto } from "../dtos/education-dtos.js";
-import { redis } from "../lib/redis.js";
+import { validate } from "../validation/validation.js";
 
 /**
  * Service class for managing educational history.
@@ -30,9 +32,7 @@ class EducationService {
     try {
       const keys = await redis.keys("educations:list:*");
       if (keys.length > 0) await redis.del(...keys);
-    } catch (err) {
-      // Internal error tracking (silent)
-    }
+    } catch (err) {}
   }
 
   /**
@@ -56,7 +56,7 @@ class EducationService {
 
   /**
    * Creates a new education history record.
-   * * @param {string} userId - The unique identifier of the user.
+   * @param {string} userId - The unique identifier of the user.
    * @param {Object} request - The education data payload.
    * @returns {Promise<EducationDto>} The newly created education record.
    * @throws {ApiError} If the database operation fails.
@@ -85,7 +85,7 @@ class EducationService {
 
   /**
    * Updates an existing education record selectively by comparing current and provided data.
-   * * @param {string} userId - The unique identifier of the user owning the record.
+   * @param {string} userId - The unique identifier of the user owning the record.
    * @param {string} id - The ID of the education record to update.
    * @param {Object} request - The update payload containing modified fields.
    * @returns {Promise<EducationDto>} The updated education record.
@@ -144,7 +144,7 @@ class EducationService {
 
   /**
    * Deletes an education history record.
-   * * @param {string} userId - The unique identifier of the user owning the record.
+   * @param {string} userId - The unique identifier of the user owning the record.
    * @param {string} id - The ID of the education record to delete.
    * @returns {Promise<void>}
    * @throws {ApiError} 404 if the record is not found, 500 on database failure.
@@ -174,15 +174,17 @@ class EducationService {
 
   /**
    * Fetches a paginated list of education records with a cache-aside strategy.
-   * * @param {number} page - The page number to retrieve.
+   * @param {number} page - The page number to retrieve.
    * @param {number} limit - The number of records per page.
    * @param {string} [search] - Optional keyword to filter by institution or title.
+   * @param {boolean|string} [isCurrent] - Filter by current education status.
    * @returns {Promise<Object>} Object containing the list of education records and pagination metadata.
    * @throws {ApiError} If retrieval or caching fails.
    */
   async gets(page, limit, search, isCurrent) {
+    const isCurrentFilter = isCurrent === "true" || isCurrent === true;
     const cacheKey = `educations:list:${page}:${limit}:${search || ""}:${
-      isCurrent || ""
+      isCurrent !== undefined ? isCurrentFilter : ""
     }`;
 
     try {
@@ -194,7 +196,7 @@ class EducationService {
 
       const where = {
         ...(isCurrent !== undefined && {
-          isCurrent: isCurrent === "true" || isCurrent === true,
+          isCurrent: isCurrentFilter,
         }),
         ...(search && {
           OR: [
@@ -220,7 +222,9 @@ class EducationService {
         metadata: PaginationUtils.generateMetadata(total, page, take),
       };
 
-      await redis.set(cacheKey, JSON.stringify(result), { ex: 86400 });
+      await redis.set(cacheKey, JSON.stringify(result), {
+        ex: DEFAULT_CACHE_TTL,
+      });
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;

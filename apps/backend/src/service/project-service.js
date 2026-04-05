@@ -1,16 +1,19 @@
+import axios from "axios";
+import { convert } from "html-to-text";
+import slugify from "slugify";
+
+import { DEFAULT_CACHE_TTL } from "@heykyy/constant";
+
 import { getPrisma } from "../application/database.js";
-import { validate } from "../validation/validation.js";
+import { ProjectDto, ProjectListDto } from "../dtos/project-dtos.js";
+import { redis } from "../lib/redis.js";
+import { supabase } from "../lib/supabase.js";
+import { ApiError, AssetUtils, PaginationUtils } from "../utils/index.js";
 import {
   createProjectSchema,
   updateProjectSchema,
 } from "../validation/project-validations.js";
-import { ApiError, PaginationUtils, AssetUtils } from "@heykyy/utils-backend";
-import { ProjectDto, ProjectListDto } from "../dtos/project-dtos.js";
-import { supabase } from "../lib/supabase.js";
-import { redis } from "../lib/redis.js";
-import { convert } from "html-to-text";
-import axios from "axios";
-import slugify from "slugify";
+import { validate } from "../validation/validation.js";
 
 /**
  * Service class for managing software project lifecycles.
@@ -410,13 +413,9 @@ class ProjectService {
 
       const detailUpdate = {};
       if (payload.contentHtml !== undefined) {
-
-
         const cleanedHtml = (payload.contentHtml || "")
           .replace(/<p>\s*(<br\s*\/?>)?\s*<\/p>/gi, "")
           .trim();
-
-          console.log("html cleaned" , JSON.stringify(cleanedHtml , null ,2));
 
         const normalize = (html) =>
           (html || "")
@@ -671,7 +670,7 @@ class ProjectService {
       metadata: PaginationUtils.generateMetadata(total, page, take),
     };
 
-    await redis.set(cacheKey, JSON.stringify(result), { ex: 86400 });
+    await redis.set(cacheKey, JSON.stringify(result), { ex: DEFAULT_CACHE_TTL });
     return result;
   }
 

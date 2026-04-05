@@ -1,4 +1,4 @@
-import { AsyncHandler } from "@heykyy/utils-backend";
+import { AsyncHandler } from "../utils/index.js";
 import { getPrisma } from "../application/database.js";
 import { redis } from "../lib/redis.js";
 

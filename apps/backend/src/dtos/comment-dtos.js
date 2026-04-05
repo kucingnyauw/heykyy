@@ -8,13 +8,15 @@ class CommentDto {
       id: comment.user?.id,
       name: comment.user?.name,
       avatar: comment.user?.profilePhoto?.url ?? null,
-      role: comment.user?.role ,
-      bio : comment.user?.about
+      role: comment.user?.role,
+      bio: comment.user?.about,
     };
 
     this.permissions = {
       canEdit: !!currentUserId && comment.userId === currentUserId,
-      canDelete: !!currentUserId && (comment.userId === currentUserId || comment.user?.role === "ADMIN"),
+      canDelete:
+        !!currentUserId &&
+        (comment.userId === currentUserId || comment.user?.role === "ADMIN"),
     };
 
     this.timestamps = {
@@ -34,7 +36,7 @@ class CommentResponseDto {
   constructor(comments, totalAll, currentUserId) {
     this.data = comments.map((c) => new CommentDto(c, currentUserId));
     this.stats = {
-      totalAll: totalAll || 0
+      totalAll: totalAll || 0,
     };
   }
 }
@@ -51,11 +53,19 @@ class CommentAdminDto {
       avatar: comment.user?.profilePhoto?.url ?? null,
     };
 
-    this.source = comment.blog ? {
-      type: "blog",
-      id: comment.blog.id,
-      title: comment.blog.title,
-    } : null;
+    this.source = comment.blog
+      ? {
+          type: "BLOG",
+          id: comment.blog.id,
+          title: comment.blog.title,
+        }
+      : comment.project
+      ? {
+          type: "PROJECT",
+          id: comment.project.id,
+          title: comment.project.title,
+        }
+      : null;
 
     this.timestamps = {
       createdAt: comment.createdAt,

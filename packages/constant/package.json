@@ -1,19 +1,11 @@
 {
   "name": "@heykyy/constant",
   "version": "1.0.0",
+  "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
+  "main": "./src/index.js",
   "exports": {
-    ".": "./dist/index.js"
-  },
-  "scripts": {
-    "build": "tsup src/index.js --format esm --clean",
-    "dev": "tsup src/index.js --format esm --watch",
-    "clean": "rm -rf dist",
-    "lint": "eslint 'src/**/*.js'"
-  },
-  "devDependencies": {
-    "tsup": "^8.0.2"
+    ".": "./src/index.js",
+    "./*": "./src/*.js"
   }
 }

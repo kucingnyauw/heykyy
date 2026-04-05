@@ -27,6 +27,8 @@ enum ContentStatus {
   ARCHIVED
 }
 
+// Enum CommentTargetType dihapus karena kita menggunakan relasi eksplisit
+
 // ==================== USER MODEL ====================
 model User {
   id    String  @id @default(uuid())
@@ -118,7 +120,7 @@ model Blog {
   author    User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
   category  Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   thumbnail Asset?      @relation("BlogThumbnail", fields: [thumbnailId], references: [id], onDelete: SetNull)
-  audio     Asset?      @relation("BlogAudio", fields: [audioId], references: [id], onDelete: SetNull) // Tambahkan ini
+  audio     Asset?      @relation("BlogAudio", fields: [audioId], references: [id], onDelete: SetNull)
   detail    BlogDetail?
   likes     BlogLike[]
   comments  Comment[]
@@ -179,12 +181,13 @@ model Project {
 
   author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  audio    Asset?    @relation("ProjectAudio", fields: [audioId], references: [id], onDelete: SetNull) // Tambahkan ini
+  audio    Asset?    @relation("ProjectAudio", fields: [audioId], references: [id], onDelete: SetNull)
 
   stacks     ProjectStack[]
   thumbnails ProjectThumbnail[]
   detail     ProjectDetail?
   likes      ProjectLike[]
+  comments   Comment[] // Ditambahkan agar Project juga bisa memiliki relasi komentar
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -257,16 +260,20 @@ model ProjectLike {
   @@map("project_likes")
 }
 
-// ==================== COMMENT MODEL (Hanya untuk Blog) ====================
+// ==================== COMMENT MODEL ====================
 model Comment {
-  id      String @id @default(uuid())
-  content String
+  id        String   @id @default(uuid())
+  content   String
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  blogId String
-  blog   Blog   @relation(fields: [blogId], references: [id], onDelete: Cascade)
+
+  blogId    String?
+  blog      Blog?    @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   parentId String?
   parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
@@ -275,8 +282,9 @@ model Comment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([blogId])
   @@index([userId])
+  @@index([blogId])
+  @@index([projectId])
   @@map("comments")
 }
 

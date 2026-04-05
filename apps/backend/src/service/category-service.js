@@ -1,10 +1,12 @@
-import { PaginationUtils, ApiError, AssetUtils } from "@heykyy/utils-backend";
+import { DEFAULT_CACHE_TTL } from "@heykyy/constant";
+
 import { getPrisma } from "../application/database.js";
-import { validate } from "../validation/validation.js";
-import { createCategorySchema } from "../validation/category-validations.js";
 import { CategoryDto, CategoryListDto } from "../dtos/category-dtos.js";
 import { redis } from "../lib/redis.js";
 import { supabase } from "../lib/supabase.js";
+import { ApiError, AssetUtils, PaginationUtils } from "../utils/index.js";
+import { createCategorySchema } from "../validation/category-validations.js";
+import { validate } from "../validation/validation.js";
 
 /**
  * Service class for managing category operations including creation,
@@ -13,7 +15,7 @@ import { supabase } from "../lib/supabase.js";
 class CategoryService {
   /**
    * Provides access to the Prisma client instance.
-   * @returns {import('@prisma/client').PrismaClient}
+   * * @returns {import('@prisma/client').PrismaClient}
    */
   get prisma() {
     return getPrisma();
@@ -21,7 +23,7 @@ class CategoryService {
 
   /**
    * Clears category-related cache keys from Redis.
-   * @private
+   * * @private
    * @returns {Promise<void>}
    */
   async #clearCategoryCaches() {
@@ -30,14 +32,12 @@ class CategoryService {
       if (keys.length > 0) {
         await redis.del(...keys);
       }
-    } catch (err) {
-      // Internal error tracking
-    }
+    } catch (err) {}
   }
 
   /**
    * Clears project-related cache keys from Redis.
-   * @private
+   * * @private
    * @returns {Promise<void>}
    */
   async #clearProjectCaches() {
@@ -45,14 +45,12 @@ class CategoryService {
       const keys = await redis.keys("projects:list:*");
       if (keys.length > 0) await redis.del(...keys);
       await redis.del("projects:featured");
-    } catch (err) {
-      // Internal error tracking
-    }
+    } catch (err) {}
   }
 
   /**
    * Clears blog-related cache keys from Redis.
-   * @private
+   * * @private
    * @returns {Promise<void>}
    */
   async #clearBlogCaches() {
@@ -60,21 +58,18 @@ class CategoryService {
       const keys = await redis.keys("blogs:list:*");
       if (keys.length > 0) await redis.del(...keys);
       await redis.del("blogs:featured");
-    } catch (err) {
-      // Internal error tracking
-    }
+    } catch (err) {}
   }
 
   /**
    * Returns the select configuration for category queries.
-   * @private
+   * * @private
    */
   get #categorySelect() {
     return {
       id: true,
       name: true,
       type: true,
-
       createdAt: true,
       updatedAt: true,
     };
@@ -266,6 +261,8 @@ class CategoryService {
    * @param {number} limit - Items per page
    * @param {string} [search] - Keyword to filter categories by name
    * @param {string} [type] - Filter categories by type
+   * @param {string} [sortBy="latest"] - Sort order
+   * @param {boolean|string} [hasContentOnly=false] - Filter to only return categories with associated content
    * @returns {Promise<Object>} Object containing category data and pagination metadata
    * @throws {ApiError} 500 if retrieval fails
    */
@@ -278,9 +275,10 @@ class CategoryService {
     sortBy = "latest",
     hasContentOnly = false
   ) {
+    const isHasContentOnly = hasContentOnly === "true" || hasContentOnly === true;
     const cacheKey = `categories:list:${userId || "public"}:${page}:${limit}:${
       search || ""
-    }:${type || ""}:${sortBy}:${hasContentOnly}`;
+    }:${type || ""}:${sortBy}:${isHasContentOnly}`;
 
     try {
       const cached = await redis.get(cacheKey);
@@ -294,7 +292,7 @@ class CategoryService {
         ...(search && {
           OR: [{ name: { contains: search, mode: "insensitive" } }],
         }),
-        ...(hasContentOnly && {
+        ...(isHasContentOnly && {
           OR: [{ blogs: { some: {} } }, { projects: { some: {} } }],
         }),
       };
@@ -320,7 +318,7 @@ class CategoryService {
         metadata: PaginationUtils.generateMetadata(total, page, take),
       };
 
-      await redis.set(cacheKey, JSON.stringify(result), { ex: 86400 });
+      await redis.set(cacheKey, JSON.stringify(result), { ex: DEFAULT_CACHE_TTL });
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;

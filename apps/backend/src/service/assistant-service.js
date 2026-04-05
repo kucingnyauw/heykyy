@@ -1,21 +1,27 @@
-import { ApiError } from "@heykyy/utils-backend";
+import crypto from "crypto";
+import axios from "axios";
+
+import { MAX_AI_USAGE, MAX_AI_DELAY_USAGE } from "@heykyy/constant";
+
 import { getPrisma } from "../application/database.js";
+import {
+  AssistantChatDto,
+  GeneratedBlogDto,
+  GeneratedProjectDto,
+} from "../dtos/assistant-dtos.js";
 import { redis } from "../lib/redis.js";
-import { MAX_DELAY, MAX_USAGE } from "@heykyy/constant";
-import { validate } from "../validation/validation.js";
+import { ApiError } from "../utils/index.js";
 import {
   askAssistantSchema,
   generateBlogContentSchema,
   generateProjectContentSchema,
 } from "../validation/assistant-validations.js";
-import {
-  GeneratedBlogDto,
-  GeneratedProjectDto,
-  AssistantChatDto,
-} from "../dtos/assistant-dtos.js";
-import axios from "axios";
-import crypto from "crypto";
+import { validate } from "../validation/validation.js";
 
+/**
+ * Service responsible for handling AI Assistant interactions,
+ * including chat capabilities, blog generation, and project case study creation.
+ */
 class AssistantService {
   /**
    * Initializes the AssistantService and sets up the Redis client.
@@ -26,7 +32,8 @@ class AssistantService {
 
   /**
    * Gets the Prisma client instance.
-   * * @returns {import('@prisma/client').PrismaClient} The Prisma client.
+   *
+   * @returns {import('@prisma/client').PrismaClient} The Prisma client.
    */
   get prisma() {
     return getPrisma();
@@ -35,7 +42,8 @@ class AssistantService {
   /**
    * Processes a user query directed at the AI portfolio assistant.
    * Handles rate limiting, caching, context retrieval, and AI communication.
-   * * @param {string} ip - The IP address of the user making the request.
+   *
+   * @param {string} ip - The IP address of the user making the request.
    * @param {Object} request - The request payload.
    * @param {string} request.message - The message/question from the user.
    * @returns {Promise<AssistantChatDto>} The AI's response wrapped in a DTO.
@@ -141,9 +149,11 @@ class AssistantService {
         { role: "user", content: message },
         { role: "assistant", content: answer },
       ].slice(-6);
+
       await this.redis
         .set(historyKey, JSON.stringify(updatedHistory), { ex: 3600 })
         .catch(() => null);
+
       await this.#storeResponse(message, ip, answer);
 
       return new AssistantChatDto(answer);
@@ -159,7 +169,8 @@ class AssistantService {
 
   /**
    * Generates a fully structured blog post utilizing the AI model based on a user prompt.
-   * * @param {Object} request - The request payload.
+   *
+   * @param {Object} request - The request payload.
    * @param {string} request.prompt - The topic/prompt to base the blog content on.
    * @returns {Promise<GeneratedBlogDto>} The generated blog content details.
    */
@@ -194,7 +205,8 @@ class AssistantService {
 
   /**
    * Generates a professional project case study utilizing the AI model based on a user prompt.
-   * * @param {Object} request - The request payload.
+   *
+   * @param {Object} request - The request payload.
    * @param {string} request.prompt - The details/prompt of the project to generate a case study for.
    * @returns {Promise<GeneratedProjectDto>} The generated case study content details.
    */
@@ -228,7 +240,8 @@ class AssistantService {
 
   /**
    * Internal helper method to interact with the OpenRouter AI API.
-   * * @private
+   *
+   * @private
    * @param {string} systemPrompt - The system instructions directing the AI's behavior.
    * @param {string|null} userMessage - The specific query or prompt from the user.
    * @param {boolean} [isJson=false] - Flag to dictate if the API should explicitly enforce a JSON output format.
@@ -274,7 +287,8 @@ class AssistantService {
 
   /**
    * Retrieves and caches the admin user's portfolio context from the database to inject into the AI prompt.
-   * * @private
+   *
+   * @private
    * @returns {Promise<Object>} An object containing the admin's profile, education, and published projects.
    */
   async #storeDatabase() {
@@ -318,16 +332,21 @@ class AssistantService {
 
   /**
    * Implements IP-based rate limiting to prevent API abuse.
-   * * @private
+   *
+   * @private
    * @param {string} ip - The IP address of the incoming request.
    * @returns {Promise<void>}
-   * @throws {ApiError} If the IP exceeds the MAX_USAGE within the specified time frame.
+   * @throws {ApiError} If the IP exceeds the MAX_AI_USAGE within the specified time frame.
    */
   async #storeRequest(ip) {
     const key = `rate:limit:assistant:${ip}`;
     const hits = await this.redis.incr(key).catch(() => 1);
-    if (hits === 1) await this.redis.expire(key, MAX_DELAY).catch(() => null);
-    if (hits > MAX_USAGE) {
+
+    if (hits === 1) {
+      await this.redis.expire(key, MAX_AI_DELAY_USAGE).catch(() => null);
+    }
+
+    if (hits > MAX_AI_USAGE) {
       throw new ApiError(
         429,
         "Daily inquiry limit reached. Please contact me via email."
@@ -337,7 +356,8 @@ class AssistantService {
 
   /**
    * Caches the AI's response to a specific question to speed up future identical inquiries from the same IP.
-   * * @private
+   *
+   * @private
    * @param {string} question - The user's original question.
    * @param {string} ip - The user's IP address.
    * @param {string} answer - The generated AI response.
@@ -349,6 +369,7 @@ class AssistantService {
       .update(question.toLowerCase().trim())
       .digest("hex")
       .slice(0, 16);
+
     await this.redis
       .set(`assistant:ask:${ip}:${hash}`, answer, { ex: 3600 })
       .catch(() => null);
@@ -356,7 +377,8 @@ class AssistantService {
 
   /**
    * Clears the conversational history stored in Redis for a specific IP address.
-   * * @param {string} ip - The IP address whose history should be deleted.
+   *
+   * @param {string} ip - The IP address whose history should be deleted.
    * @returns {Promise<void>}
    */
   async clearHistory(ip) {

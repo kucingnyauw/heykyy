@@ -1,16 +1,18 @@
+import { DEFAULT_CACHE_TTL } from "@heykyy/constant";
+
 import { getPrisma } from "../application/database.js";
-import { validate } from "../validation/validation.js";
-import {
-  createCertificateSchema,
-  updateCertificateSchema,
-} from "../validation/certificate-validations.js";
-import { ApiError, PaginationUtils, AssetUtils } from "@heykyy/utils-backend";
 import {
   CertificateDto,
   CertificateListDto,
 } from "../dtos/certificate-dtos.js";
-import { supabase } from "../lib/supabase.js";
 import { redis } from "../lib/redis.js";
+import { supabase } from "../lib/supabase.js";
+import { ApiError, AssetUtils, PaginationUtils } from "../utils/index.js";
+import {
+  createCertificateSchema,
+  updateCertificateSchema,
+} from "../validation/certificate-validations.js";
+import { validate } from "../validation/validation.js";
 
 /**
  * Service class for managing Professional Certificates.
@@ -34,9 +36,7 @@ class CertificateService {
     try {
       const keys = await redis.keys("certificates:list:*");
       if (keys.length > 0) await redis.del(...keys);
-    } catch (err) {
-      /** Cache invalidation failure is caught to ensure process continuity */
-    }
+    } catch (err) {}
   }
 
   /**
@@ -67,9 +67,10 @@ class CertificateService {
    */
   async #processAndCreateAsset(file) {
     try {
-      /** Organize files into images or docs subfolders based on MIME type */
       const isImage = file.mimeType.startsWith("image/");
-      const targetFolder = isImage ? "certificates/images" : "certificates/docs";
+      const targetFolder = isImage
+        ? "certificates/images"
+        : "certificates/docs";
 
       const uploaded = await AssetUtils.createAsset(
         supabase,
@@ -145,14 +146,16 @@ class CertificateService {
       await this.#clearCertificateCaches();
       return new CertificateDto(certificate);
     } catch (err) {
-      /** Rollback: Clean up any uploaded assets if the database operation fails */
       for (const path of trackedPaths)
         await AssetUtils.deleteAsset(supabase, path).catch(() => {});
       for (const id of trackedAssetIds)
         await this.prisma.asset.delete({ where: { id } }).catch(() => {});
-      
+
       if (err instanceof ApiError) throw err;
-      throw new ApiError(500, "Failed to create the certificate record due to a server error.");
+      throw new ApiError(
+        500,
+        "Failed to create the certificate record due to a server error."
+      );
     }
   }
 
@@ -181,7 +184,10 @@ class CertificateService {
     });
 
     if (!existing) {
-      throw new ApiError(404, "The certificate requested for update was not found.");
+      throw new ApiError(
+        404,
+        "The certificate requested for update was not found."
+      );
     }
 
     const payload = validate(updateCertificateSchema, request);
@@ -235,9 +241,12 @@ class CertificateService {
         await AssetUtils.deleteAsset(supabase, path).catch(() => {});
       for (const id of trackedAssetIds)
         await this.prisma.asset.delete({ where: { id } }).catch(() => {});
-      
+
       if (err instanceof ApiError) throw err;
-      throw new ApiError(500, "An error occurred while updating the certificate.");
+      throw new ApiError(
+        500,
+        "An error occurred while updating the certificate."
+      );
     }
   }
 
@@ -256,14 +265,23 @@ class CertificateService {
     });
 
     if (!certificate) {
-      throw new ApiError(404, "Certificate not found. It may have already been deleted.");
+      throw new ApiError(
+        404,
+        "Certificate not found. It may have already been deleted."
+      );
     }
 
     if (certificate.image) {
-      await this.#destroyAsset(certificate.image.id, certificate.image.storagePath);
+      await this.#destroyAsset(
+        certificate.image.id,
+        certificate.image.storagePath
+      );
     }
     if (certificate.file) {
-      await this.#destroyAsset(certificate.file.id, certificate.file.storagePath);
+      await this.#destroyAsset(
+        certificate.file.id,
+        certificate.file.storagePath
+      );
     }
 
     await this.prisma.certificate.delete({ where: { id } });
@@ -283,7 +301,9 @@ class CertificateService {
     try {
       let cached = await redis.get(cacheKey);
       if (cached) {
-        return new CertificateDto(typeof cached === "string" ? JSON.parse(cached) : cached);
+        return new CertificateDto(
+          typeof cached === "string" ? JSON.parse(cached) : cached
+        );
       }
 
       const certificate = await this.prisma.certificate.findUnique({
@@ -292,10 +312,15 @@ class CertificateService {
       });
 
       if (!certificate) {
-        throw new ApiError(404, "The requested certificate details are unavailable.");
+        throw new ApiError(
+          404,
+          "The requested certificate details are unavailable."
+        );
       }
 
-      await redis.set(cacheKey, JSON.stringify(certificate), { ex: 86400 });
+      await redis.set(cacheKey, JSON.stringify(certificate), {
+        ex: DEFAULT_CACHE_TTL,
+      });
       return new CertificateDto(certificate);
     } catch (err) {
       if (err instanceof ApiError) throw err;
@@ -309,18 +334,21 @@ class CertificateService {
    * @param {number} limit - Items per page.
    * @param {string} [search] - Keyword search.
    * @param {string} [year] - Year filter.
-   * @param {string} [sortBy] - Sorting rule.
+   * @param {string} [sortBy="year_desc"] - Sorting rule.
    * @returns {Promise<Object>}
    */
   async gets(page, limit, search, year, sortBy = "year_desc") {
-    const cacheKey = `certificates:list:${page}:${limit}:${search || ""}:${year || ""}:${sortBy}`;
-  
+    const cacheKey = `certificates:list:${page}:${limit}:${search || ""}:${
+      year || ""
+    }:${sortBy}`;
+
     try {
       const cached = await redis.get(cacheKey);
-      if (cached) return typeof cached === "string" ? JSON.parse(cached) : cached;
-  
+      if (cached)
+        return typeof cached === "string" ? JSON.parse(cached) : cached;
+
       const { skip, limit: take } = PaginationUtils.create({ page, limit });
-  
+
       const where = {
         ...(year && { year: parseInt(year) }),
         ...(search && {
@@ -331,13 +359,13 @@ class CertificateService {
           ],
         }),
       };
-  
+
       const orderMapping = {
         year_desc: { year: "desc" },
         year_asc: { year: "asc" },
         latest_added: { createdAt: "desc" },
       };
-  
+
       const [total, items] = await Promise.all([
         this.prisma.certificate.count({ where }),
         this.prisma.certificate.findMany({
@@ -348,13 +376,15 @@ class CertificateService {
           select: this.#certificateSelect,
         }),
       ]);
-  
+
       const result = {
         data: new CertificateListDto(items).items,
         metadata: PaginationUtils.generateMetadata(total, page, take),
       };
-  
-      await redis.set(cacheKey, JSON.stringify(result), { ex: 86400 });
+
+      await redis.set(cacheKey, JSON.stringify(result), {
+        ex: DEFAULT_CACHE_TTL,
+      });
       return result;
     } catch (err) {
       if (err instanceof ApiError) throw err;

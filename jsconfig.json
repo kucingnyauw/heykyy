@@ -1,22 +1,26 @@
 {
-    "compilerOptions": {
-      "baseUrl": ".",
-      "paths": {
-        "@heykyy/components": ["packages/components/src"],
-        "@heykyy/constant": ["packages/constant/src"],
-        "@heykyy/styles": ["packages/styles/src"],
-        "@heykyy/utils-backend": ["packages/utils/utils-backend/src"],
-        "@heykyy/utils-frontend": ["packages/utils/utils-frontend/src"]
-      },
-      "module": "ESNext",
-      "moduleResolution": "Node",
-      "target": "ESNext",
-      "jsx": "react-jsx",
-      "types": []
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@heykyy/components/*": ["packages/components/src/*"],
+      "@heykyy/constant/*": ["packages/constant/src/*"],
+      "@heykyy/theme/*": ["packages/styles/src/*"],
+      "@heykyy/utils/*": ["packages/utils/src/*"],
+      "@heykyy/config/*": ["packages/config/src/*"]
     },
-    "include": [
-      "packages/**/*",
-      "apps/**/*"
-    ],
-    "exclude": ["node_modules", "dist", "logs"]
-  }
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "target": "ESNext",
+    "jsx": "react-jsx",
+    "types": []
+  },
+  "include": [
+    "packages/**/*",
+    "apps/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "logs"
+  ]
+}

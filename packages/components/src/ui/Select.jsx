@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 
@@ -21,24 +21,7 @@ export const AppSelect = ({
   sx,
   ...props
 }) => {
-  const labelId = useMemo(
-    () => (label ? `${label.replace(/\s+/g, "-")}-label` : undefined),
-    [label]
-  );
-
-  const renderedOptions = useMemo(
-    () => [
-      <MenuItem key="none" value="">
-        <em>None</em>
-      </MenuItem>,
-      ...options.map((opt) => (
-        <MenuItem key={opt.value} value={opt.value}>
-          {opt.label}
-        </MenuItem>
-      )),
-    ],
-    [options]
-  );
+  const labelId = label ? `${label.replace(/\s+/g, "-")}-label` : undefined;
 
   return (
     <FormControl
@@ -58,7 +41,14 @@ export const AppSelect = ({
         label={label}
         {...props}
       >
-        {renderedOptions}
+        <MenuItem key="none" value="">
+          <em>None</em>
+        </MenuItem>
+        {options.map((opt) => (
+          <MenuItem key={opt.value} value={opt.value}>
+            {opt.label}
+          </MenuItem>
+        ))}
       </Select>
     </FormControl>
   );

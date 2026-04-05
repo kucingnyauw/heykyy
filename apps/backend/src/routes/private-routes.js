@@ -1,25 +1,23 @@
 import { Router } from "express";
 import { rateLimit } from "express-rate-limit";
-import { authMiddleware } from "../middleware/auth-middleware.js";
-import { errorMiddleware } from "../middleware/error-middleware.js";
-import { timeoutMiddleware } from "../middleware/timeout-middleware.js";
-import { uploadMultiType } from "../middleware/file-middleware.js";
-import { roleMiddleware } from "../middleware/role-middleware.js";
 
-/** Controller Imports */
-import UserController from "../controller/user-controller.js";
-import ProjectController from "../controller/project-controller.js";
+import AssetController from "../controller/asset-controller.js";
+import AssistantController from "../controller/assistant-controller.js";
 import BlogController from "../controller/blog-controller.js";
-import CertificateController from "../controller/certificate-controller.js";
 import CategoryController from "../controller/category-controller.js";
-import TechController from "../controller/tech-controller.js";
+import CertificateController from "../controller/certificate-controller.js";
 import CommentController from "../controller/comment-controller.js";
 import CvController from "../controller/cv-controller.js";
-import EducationController from "../controller/education-controller.js";
 import DashboardController from "../controller/dashboard-controller.js";
-import AssistantController from "../controller/assistant-controller.js";
-import AssetController from "../controller/asset-controller.js";
-import { STANDARD_TIMEOUT, AI_TIMEOUT, FILE_TIMEOUT } from "@heykyy/constant";
+import EducationController from "../controller/education-controller.js";
+import ProjectController from "../controller/project-controller.js";
+import TechController from "../controller/tech-controller.js";
+import UserController from "../controller/user-controller.js";
+import { authMiddleware } from "../middleware/auth-middleware.js";
+import { errorMiddleware } from "../middleware/error-middleware.js";
+import { uploadMultiType } from "../middleware/file-middleware.js";
+import { roleMiddleware } from "../middleware/role-middleware.js";
+import { timeoutMiddleware } from "../middleware/timeout-middleware.js";
 
 const router = Router();
 const API_VERSION = process.env.API_VERSION || "v1";
@@ -62,7 +60,7 @@ const aiLimit = createLimiter(
 );
 
 /** Global Middleware */
-router.use(prefix, timeoutMiddleware(STANDARD_TIMEOUT), authMiddleware);
+router.use(prefix, timeoutMiddleware(30000), authMiddleware);
 
 /** Account & Identity */
 router.get(`${prefix}/auth/me`, standardLimit, UserController.me);
@@ -70,7 +68,7 @@ router.get(`${prefix}/users/activity`, standardLimit, UserController.activity);
 router.post(
   `${prefix}/users/profile`,
   strictLimit,
-  timeoutMiddleware(FILE_TIMEOUT),
+  timeoutMiddleware(60000),
   uploadMultiType(["image"], "file"),
   UserController.update
 );
@@ -115,7 +113,7 @@ router
   .post(
     roleMiddleware("ADMIN"),
     heavyLimit,
-    timeoutMiddleware(FILE_TIMEOUT),
+    timeoutMiddleware(60000),
     uploadMultiType(["image"], "file"),
     BlogController.create
   );
@@ -125,7 +123,7 @@ router
   .put(
     roleMiddleware("ADMIN"),
     heavyLimit,
-    timeoutMiddleware(FILE_TIMEOUT),
+    timeoutMiddleware(60000),
     uploadMultiType(["image"], "file"),
     BlogController.update
   )
@@ -143,7 +141,7 @@ router
   .post(
     roleMiddleware("ADMIN"),
     heavyLimit,
-    timeoutMiddleware(FILE_TIMEOUT),
+    timeoutMiddleware(60000),
     uploadMultiType(["image", "docs"], "files"),
     CertificateController.create
   );
@@ -153,7 +151,7 @@ router
   .put(
     roleMiddleware("ADMIN"),
     heavyLimit,
-    timeoutMiddleware(FILE_TIMEOUT),
+    timeoutMiddleware(60000),
     uploadMultiType(["image", "docs"], "files"),
     CertificateController.update
   )
@@ -166,7 +164,7 @@ router
   .post(
     roleMiddleware("ADMIN"),
     heavyLimit,
-    timeoutMiddleware(FILE_TIMEOUT),
+    timeoutMiddleware(60000),
     uploadMultiType(["docs"], "file"),
     CvController.create
   );
@@ -176,7 +174,7 @@ router
   .put(
     roleMiddleware("ADMIN"),
     heavyLimit,
-    timeoutMiddleware(FILE_TIMEOUT),
+    timeoutMiddleware(60000),
     uploadMultiType(["docs"], "file"),
     CvController.update
   )
@@ -229,14 +227,14 @@ router.post(
   `${prefix}/ai/generate-blog`,
   roleMiddleware("ADMIN"),
   aiLimit,
-  timeoutMiddleware(AI_TIMEOUT),
+  timeoutMiddleware(180000),
   AssistantController.generateBlogContent
 );
 router.post(
   `${prefix}/ai/generate-project`,
   roleMiddleware("ADMIN"),
   aiLimit,
-  timeoutMiddleware(AI_TIMEOUT),
+  timeoutMiddleware(180000),
   AssistantController.generateProjectContent
 );
 
@@ -245,7 +243,7 @@ router.post(
   `${prefix}/upload/assets`,
   roleMiddleware("ADMIN"),
   heavyLimit,
-  timeoutMiddleware(FILE_TIMEOUT),
+  timeoutMiddleware(60000),
   uploadMultiType(["image", "docs"], "file"),
   AssetController.create
 );

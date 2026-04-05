@@ -1,7 +1,9 @@
+import { DEFAULT_CACHE_TTL } from "@heykyy/constant";
+
 import { getPrisma } from "../application/database.js";
 import { DashboardDto } from "../dtos/dashboard-dtos.js";
 import { redis } from "../lib/redis.js";
-import { ApiError } from "@heykyy/utils-backend";
+import { ApiError } from "../utils/index.js";
 
 /**
  * Service class for high-level administrative analytics and system monitoring.
@@ -235,7 +237,7 @@ class DashboardService {
         },
       });
 
-      await redis.set(cacheKey, JSON.stringify(result), { ex: 300 });
+      await redis.set(cacheKey, JSON.stringify(result), { ex: DEFAULT_CACHE_TTL });
 
       return result;
     } catch (err) {

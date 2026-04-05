@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { Snackbar, Alert, useTheme, alpha } from "@mui/material";
 
@@ -26,7 +26,7 @@ export const AppSnackBar = ({
 }) => {
   const theme = useTheme();
 
-  const palette = useMemo(() => {
+  const getPalette = () => {
     switch (variant) {
       case "success":
         return theme.palette.success;
@@ -38,10 +38,17 @@ export const AppSnackBar = ({
       default:
         return theme.palette.info;
     }
-  }, [variant, theme.palette]);
+  };
 
-  const snackbarContent = useMemo(
-    () => (
+  const palette = getPalette();
+
+  return (
+    <Snackbar
+      open={open}
+      autoHideDuration={autoHideDuration}
+      onClose={onClose}
+      anchorOrigin={anchorOrigin}
+    >
       <Alert
         onClose={onClose}
         severity={variant}
@@ -94,18 +101,6 @@ export const AppSnackBar = ({
       >
         {message}
       </Alert>
-    ),
-    [onClose, variant, theme, palette, message]
-  );
-
-  return (
-    <Snackbar
-      open={open}
-      autoHideDuration={autoHideDuration}
-      onClose={onClose}
-      anchorOrigin={anchorOrigin}
-    >
-      {snackbarContent}
     </Snackbar>
   );
 };

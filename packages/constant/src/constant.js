@@ -1,0 +1,12 @@
+export const MAX_AI_USAGE = 10;
+export const MAX_AI_DELAY_USAGE = 24 * 60 * 60;
+export const HEIGHT_APPBAR = 58;
+export const SIDEBAR_WIDTH_EXPANDED = 260;
+export const SIDEBAR_WIDTH_COLLAPSED = 70;
+export const DEFAULT_LOCALE = "id-ID";
+export const DEFAULT_TIMEZONE = "Asia/Jakarta";
+export const MAX_FILE_UPLOAD = 10;
+export const MAX_FILE_SIZE = 10 * 1024 * 1024;
+export const MAX_API_RETRY = 2;
+export const DEFAULT_CACHE_TTL = 24 * 60 * 60 * 1000;
+export const STALE_TIME = 30 * 60 * 1000;

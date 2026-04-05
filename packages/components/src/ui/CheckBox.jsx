@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { Checkbox, FormControlLabel, useTheme, alpha } from "@mui/material";
 import { Check } from "lucide-react";
@@ -32,64 +32,52 @@ export const AppCheckBox = ({
   const muted = theme.palette.custom?.surface?.muted || theme.palette.action.hover;
   const primary = alpha(theme.palette.primary.main, 0.6);
 
-  const iconStyles = useMemo(
-    () => ({
-      width: size,
-      height: size,
-      borderRadius: 6,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      transition: theme.transitions.create(["all"]),
-    }),
-    [size, theme]
+  const iconStyles = {
+    width: size,
+    height: size,
+    borderRadius: 6,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: theme.transitions.create(["all"]),
+  };
+
+  const checkboxSx = {
+    padding: "4px",
+    "&:hover": {
+      backgroundColor: "transparent",
+    },
+    "&:focus-visible span": {
+      outline: `3px solid ${alpha(primary, 0.25)}`,
+      outlineOffset: 2,
+    },
+    ...sx,
+  };
+
+  const defaultIcon = (
+    <span
+      style={{
+        ...iconStyles,
+        border: `1px solid ${border}`,
+        background: muted,
+      }}
+    />
   );
 
-  const checkboxSx = useMemo(
-    () => ({
-      padding: "4px",
-      "&:hover": {
-        backgroundColor: "transparent",
-      },
-      "&:focus-visible span": {
-        outline: `3px solid ${alpha(primary, 0.25)}`,
-        outlineOffset: 2,
-      },
-      ...sx,
-    }),
-    [primary, sx]
-  );
-
-  const defaultIcon = useMemo(
-    () => (
-      <span
-        style={{
-          ...iconStyles,
-          border: `1px solid ${border}`,
-          background: muted,
-        }}
+  const checkedIcon = (
+    <span
+      style={{
+        ...iconStyles,
+        border: `1px solid ${primary}`,
+        background: primary,
+      }}
+    >
+      <Check
+        size={size - 4}
+        strokeWidth={3}
+        color={theme.palette.primary.contrastText}
       />
-    ),
-    [iconStyles, border, muted]
-  );
-
-  const checkedIcon = useMemo(
-    () => (
-      <span
-        style={{
-          ...iconStyles,
-          border: `1px solid ${primary}`,
-          background: primary,
-        }}
-      >
-        <Check
-          size={size - 4}
-          strokeWidth={3}
-          color={theme.palette.primary.contrastText}
-        />
-      </span>
-    ),
-    [iconStyles, primary, size, theme.palette.primary.contrastText]
+    </span>
   );
 
   const checkbox = (

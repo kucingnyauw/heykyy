@@ -1,12 +1,14 @@
-import { validate } from "../validation/validation.js";
+import { DEFAULT_CACHE_TTL } from "@heykyy/constant";
+
+import { getPrisma } from "../application/database.js";
+import { StackDto, StackListDto } from "../dtos/stack-dtos.js";
+import { redis } from "../lib/redis.js";
+import { ApiError, PaginationUtils } from "../utils/index.js";
 import {
   createStackSchema,
   updateStackSchema,
 } from "../validation/stack-validations.js";
-import { getPrisma } from "../application/database.js";
-import { ApiError, PaginationUtils } from "@heykyy/utils-backend";
-import { StackDto, StackListDto } from "../dtos/stack-dtos.js";
-import { redis } from "../lib/redis.js";
+import { validate } from "../validation/validation.js";
 
 /**
  * Service class for managing the technology stack catalog.
@@ -30,9 +32,7 @@ class StackService {
     try {
       const keys = await redis.keys("stacks:list:*");
       if (keys.length > 0) await redis.del(...keys);
-    } catch (err) {
-      // Internal error tracking (silent)
-    }
+    } catch (err) {}
   }
 
   /**
@@ -53,7 +53,7 @@ class StackService {
 
   /**
    * Registers a new technology stack.
-   * * @param {Object} request - The stack creation payload.
+   * @param {Object} request - The stack creation payload.
    * @returns {Promise<StackDto>} The newly created technology stack details.
    * @throws {ApiError} 400 if the technology name is already registered, 500 on database failure.
    */
@@ -94,7 +94,7 @@ class StackService {
 
   /**
    * Updates metadata for a stack only if the data has actually changed.
-   * * @param {string} id - UUID of the target technology stack.
+   * @param {string} id - UUID of the target technology stack.
    * @param {Object} request - The update payload.
    * @returns {Promise<StackDto>} The updated technology stack details.
    * @throws {ApiError} 404 if the stack is not found, 400 if the new name conflicts with another entry.
@@ -161,7 +161,7 @@ class StackService {
 
   /**
    * Permanently removes a technology stack from the catalog.
-   * * @param {string} id - The unique identifier of the technology stack.
+   * @param {string} id - The unique identifier of the technology stack.
    * @returns {Promise<void>}
    * @throws {ApiError} 404 if the stack is not found, 500 if the stack is currently linked to other records.
    */
@@ -190,31 +190,33 @@ class StackService {
   }
 
   /**
-   * Retrieves a paginated list of technology stacks with 24-hour caching.
-   * * @param {number} page - The page number to retrieve.
+   * Retrieves a paginated list of technology stacks with caching.
+   * @param {number} page - The page number to retrieve.
    * @param {number} limit - The number of items per page.
    * @param {string} [search] - Optional keyword to search by name.
+   * @param {boolean|string} [hasProjectOnly=false] - Filter to only return stacks used in projects.
    * @returns {Promise<Object>} Object containing the stack data and pagination metadata.
    * @throws {ApiError} 500 on server or retrieval failure.
    */
   async gets(page, limit, search, hasProjectOnly = false) {
-    const cacheKey = `stacks:list:${page}:${limit}:${search || ""}:${hasProjectOnly}`;
-  
+    const isProjectOnlyFilter = hasProjectOnly === "true" || hasProjectOnly === true;
+    const cacheKey = `stacks:list:${page}:${limit}:${search || ""}:${isProjectOnlyFilter}`;
+
     try {
       const cached = await redis.get(cacheKey);
       if (cached) return typeof cached === "string" ? JSON.parse(cached) : cached;
-  
+
       const { skip, limit: take } = PaginationUtils.create({ page, limit });
-  
+
       const where = {
         ...(search && { name: { contains: search, mode: "insensitive" } }),
-        ...(hasProjectOnly && {
+        ...(isProjectOnlyFilter && {
           projectStacks: {
-            some: {}
-          }
-        })
+            some: {},
+          },
+        }),
       };
-  
+
       const [total, stacks] = await Promise.all([
         this.prisma.stack.count({ where }),
         this.prisma.stack.findMany({
@@ -225,20 +227,21 @@ class StackService {
           select: this.#stackSelect,
         }),
       ]);
-  
+
       const result = {
         data: new StackListDto(stacks).items,
         metadata: PaginationUtils.generateMetadata(total, page, take),
       };
-  
-      await redis.set(cacheKey, JSON.stringify(result), { ex: 86400 });
+
+      await redis.set(cacheKey, JSON.stringify(result), {
+        ex: DEFAULT_CACHE_TTL,
+      });
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;
       throw new ApiError(500, "Unable to load technology stacks.");
     }
   }
-  
 }
 
 export default new StackService();

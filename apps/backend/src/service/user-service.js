@@ -1,10 +1,10 @@
 import { getPrisma } from "../application/database.js";
-import { ApiError, AssetUtils, PaginationUtils } from "@heykyy/utils-backend";
 import { AuthDto, ActivityDto } from "../dtos/user-dtos.js";
-import { validate } from "../validation/validation.js";
-import { updateUserSchema } from "../validation/user-validations.js";
-import { supabase } from "../lib/supabase.js";
 import { redis } from "../lib/redis.js";
+import { supabase } from "../lib/supabase.js";
+import { ApiError, AssetUtils } from "../utils/index.js";
+import { updateUserSchema } from "../validation/user-validations.js";
+import { validate } from "../validation/validation.js";
 
 /**
  * Service class to handle user-related business logic including

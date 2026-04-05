@@ -1,4 +1,4 @@
-import { ApiError } from "@heykyy/utils-backend";
+import { ApiError } from "../utils/index.js";
 
 /**
  * Middleware factory to enforce a maximum duration for request processing.

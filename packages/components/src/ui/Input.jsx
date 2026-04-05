@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import {
   TextField,
@@ -9,6 +9,26 @@ import {
 import { IconButton } from "./Button";
 import { X } from "lucide-react";
 
+/**
+ * Custom TextField component with a built-in clear button and standardized styling.
+ * @param {Object} props - The component props.
+ * @param {string} [props.label] - The label for the input.
+ * @param {any} [props.value] - The value of the input.
+ * @param {Function} [props.onChange] - Callback fired when the value changes.
+ * @param {Function} [props.onBlur] - Callback fired when the input loses focus.
+ * @param {string} [props.name] - Name attribute of the input element.
+ * @param {string} [props.placeholder] - The short hint displayed in the input before the user enters a value.
+ * @param {string} [props.type="text"] - Type of the input element.
+ * @param {number} [props.minRows] - Minimum number of rows to display when multiline option is set to true.
+ * @param {number} [props.maxRows] - Maximum number of rows to display when multiline option is set to true.
+ * @param {boolean} [props.readOnly=false] - If true, the input is read-only.
+ * @param {boolean} [props.error] - If true, the label is displayed in an error state.
+ * @param {string} [props.helperText] - The helper text content.
+ * @param {Object} [props.sx] - Additional MUI system styles to apply to the input.
+ * @param {React.ReactNode} [props.endAdornment] - End adornment for the input.
+ * @param {Object} [props.slotProps] - The props used for each slot inside the Input.
+ * @param {React.Ref} ref - The ref to attach to the input element.
+ */
 export const AppInput = React.memo(
   React.forwardRef(
     (
@@ -34,31 +54,29 @@ export const AppInput = React.memo(
     ) => {
       const theme = useTheme();
 
-      const inputStyles = useMemo(() => {
-        const bgColor =
-          theme.palette.surface?.muted || theme.palette.background.paper;
+      const bgColor =
+        theme.palette.surface?.muted || theme.palette.background.paper;
 
-        return {
-          fontFamily:
-            'Roboto, "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif',
+      const inputStyles = {
+        fontFamily:
+          'Roboto, "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif',
+        backgroundColor: bgColor,
+        borderRadius: theme.shape.borderRadius,
+        "& .MuiInputBase-root": {
           backgroundColor: bgColor,
-          borderRadius: theme.shape.borderRadius,
-          "& .MuiInputBase-root": {
-            backgroundColor: bgColor,
+        },
+        "& input[readonly], & textarea[readonly]": {
+          cursor: "default",
+        },
+        "& .MuiInputBase-root:has(input[readonly])": {
+          backgroundColor: theme.palette.action.hover,
+        },
+        "& .MuiOutlinedInput-root:has(input[readonly]) .MuiOutlinedInput-notchedOutline":
+          {
+            opacity: 0.2,
           },
-          "& input[readonly], & textarea[readonly]": {
-            cursor: "default",
-          },
-          "& .MuiInputBase-root:has(input[readonly])": {
-            backgroundColor: theme.palette.action.hover,
-          },
-          "& .MuiOutlinedInput-root:has(input[readonly]) .MuiOutlinedInput-notchedOutline":
-            {
-              opacity: 0.2,
-            },
-          ...sx,
-        };
-      }, [theme, sx]);
+        ...sx,
+      };
 
       const handleClear = () => {
         if (onChange) {
@@ -119,7 +137,7 @@ export const AppInput = React.memo(
   )
 );
 
-AppInput.displayName = "AppInput";
+
 AppInput.propTypes = {
   label: PropTypes.string,
   value: PropTypes.any,
@@ -138,6 +156,20 @@ AppInput.propTypes = {
   slotProps: PropTypes.object,
 };
 
+/**
+ * Custom Autocomplete component with standardized styling.
+ * @param {Object} props - The component props.
+ * @param {string} [props.label] - The label for the input.
+ * @param {any} [props.value] - The value of the autocomplete.
+ * @param {Function} [props.onChange] - Callback fired when the value changes.
+ * @param {string} [props.placeholder] - The short hint displayed in the input before the user enters a value.
+ * @param {Array} [props.options=[]] - Array of options to be displayed.
+ * @param {Object} [props.sx] - Additional MUI system styles to apply to the input.
+ * @param {boolean} [props.error] - If true, the label is displayed in an error state.
+ * @param {string} [props.helperText] - The helper text content.
+ * @param {boolean} [props.fullWidth=true] - If true, the input will take up the full width of its container.
+ * @param {React.Ref} ref - The ref to attach to the input element.
+ */
 export const AppAutoComplete = React.memo(
   React.forwardRef(
     (
@@ -157,17 +189,16 @@ export const AppAutoComplete = React.memo(
     ) => {
       const theme = useTheme();
 
-      const autocompleteStyles = useMemo(() => {
-        const bgColor =
-          theme.palette.surface?.muted || theme.palette.background.paper;
-        return {
-          width: fullWidth ? "100%" : "auto",
-          backgroundColor: bgColor,
-          borderRadius: theme.shape.borderRadius,
-          "& .MuiInputBase-root": { backgroundColor: bgColor },
-          ...sx,
-        };
-      }, [theme, sx, fullWidth]);
+      const bgColor =
+        theme.palette.surface?.muted || theme.palette.background.paper;
+        
+      const autocompleteStyles = {
+        width: fullWidth ? "100%" : "auto",
+        backgroundColor: bgColor,
+        borderRadius: theme.shape.borderRadius,
+        "& .MuiInputBase-root": { backgroundColor: bgColor },
+        ...sx,
+      };
 
       const handleChange = (event, newValue) => {
         if (onChange) {
@@ -185,10 +216,13 @@ export const AppAutoComplete = React.memo(
             if (typeof option === "object" && option !== null) {
               return (option.label || option.name || "").toString();
             }
-            return option !== undefined && option !== null ? option.toString() : "";
+            return option !== undefined && option !== null
+              ? option.toString()
+              : "";
           }}
           isOptionEqualToValue={(option, val) => {
-            const optVal = typeof option === "object" ? option.value || option.id : option;
+            const optVal =
+              typeof option === "object" ? option.value || option.id : option;
             const curVal = typeof val === "object" ? val.value || val.id : val;
             return String(optVal) === String(curVal);
           }}
@@ -211,7 +245,7 @@ export const AppAutoComplete = React.memo(
   )
 );
 
-AppAutoComplete.displayName = "AppAutoComplete";
+
 AppAutoComplete.propTypes = {
   label: PropTypes.string,
   value: PropTypes.any,

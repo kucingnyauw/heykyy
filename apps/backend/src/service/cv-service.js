@@ -1,13 +1,15 @@
+import { DEFAULT_CACHE_TTL } from "@heykyy/constant";
+
 import { getPrisma } from "../application/database.js";
-import { validate } from "../validation/validation.js";
+import { CvDto, CvListDto } from "../dtos/cvs-dtos.js";
+import { redis } from "../lib/redis.js";
+import { supabase } from "../lib/supabase.js";
+import { ApiError, AssetUtils, PaginationUtils } from "../utils/index.js";
 import {
   createCVSchema,
   updateCVSchema,
 } from "../validation/cv-validations.js";
-import { ApiError, PaginationUtils, AssetUtils } from "@heykyy/utils-backend";
-import { CvDto, CvListDto } from "../dtos/cvs-dtos.js";
-import { supabase } from "../lib/supabase.js";
-import { redis } from "../lib/redis.js";
+import { validate } from "../validation/validation.js";
 
 /**
  * Service class for managing CV (Curriculum Vitae) lifecycle.
@@ -32,9 +34,7 @@ class CvService {
       const keys = await redis.keys("cvs:list:*");
       if (keys.length > 0) await redis.del(...keys);
       await redis.del("cvs:main");
-    } catch (err) {
-      /** Cache invalidation errors are suppressed to maintain service availability */
-    }
+    } catch (err) {}
   }
 
   /**
@@ -61,7 +61,6 @@ class CvService {
    */
   async uploadFile(file) {
     try {
-      /** Standardized path for CV documents */
       const uploaded = await AssetUtils.createAsset(
         supabase,
         file,
@@ -124,7 +123,6 @@ class CvService {
       await this.#clearCvCaches();
       return new CvDto(cv);
     } catch (err) {
-      /** Clean up orphaned files if the process fails */
       if (tempPath) {
         await AssetUtils.deleteAsset(supabase, tempPath).catch(() => {});
       }
@@ -276,7 +274,7 @@ class CvService {
    * @param {number} page - Current page.
    * @param {number} limit - Items per page.
    * @param {string} [search] - Keyword filter for the title.
-   * @param {boolean} [isMain] - Filter by primary status.
+   * @param {boolean|string} [isMain] - Filter by primary status.
    * @returns {Promise<Object>}
    */
   async gets(page, limit, search, isMain) {
@@ -314,7 +312,9 @@ class CvService {
         metadata: PaginationUtils.generateMetadata(total, page, take),
       };
 
-      await redis.set(cacheKey, JSON.stringify(result), { ex: 86400 });
+      await redis.set(cacheKey, JSON.stringify(result), {
+        ex: DEFAULT_CACHE_TTL,
+      });
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;
@@ -354,7 +354,7 @@ class CvService {
         );
       }
 
-      await redis.set(cacheKey, JSON.stringify(cv), { ex: 86400 });
+      await redis.set(cacheKey, JSON.stringify(cv), { ex: DEFAULT_CACHE_TTL });
       return new CvDto(cv);
     } catch (err) {
       if (err instanceof ApiError) throw err;

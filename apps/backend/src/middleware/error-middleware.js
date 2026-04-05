@@ -1,5 +1,5 @@
-import { ApiError } from "@heykyy/utils-backend";
 import { logger } from "../application/logger.js";
+import { ApiError } from "../utils/index.js";
 
 /**
  * Global Error Handling Middleware.
@@ -15,7 +15,6 @@ import { logger } from "../application/logger.js";
 export const errorMiddleware = (err, req, res, next) => {
   let error = err;
 
-  // Wrap non-operational errors into a standardized ApiError
   if (!(error instanceof ApiError)) {
     const statusCode = error.statusCode || 500;
     const message =
@@ -30,7 +29,6 @@ export const errorMiddleware = (err, req, res, next) => {
     });
   }
 
-  // Log full error details for debugging and audit
   logger.error({
     message: err.message,
     statusCode: error.statusCode,
@@ -41,23 +39,19 @@ export const errorMiddleware = (err, req, res, next) => {
     stack: err.stack,
   });
 
-  // Build response payload
   const responsePayload = {
     success: false,
     message: error.message,
     error: {
       title: error.title,
       code: error.code,
-      // Only expose stack trace in non-production environments
       ...(process.env.NODE_ENV !== "production" && { stack: err.stack }),
     },
   };
 
-  // Include Sentry error ID if available
   if (res.sentry) {
     responsePayload.sentryId = res.sentry;
   }
 
-  // Send JSON response
   res.status(error.statusCode).json(responsePayload);
 };

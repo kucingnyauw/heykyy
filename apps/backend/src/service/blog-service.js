@@ -1,16 +1,17 @@
+import axios from "axios";
+import slugify from "slugify";
 import { getPrisma } from "../application/database.js";
-import { validate } from "../validation/validation.js";
+import { BlogDto, BlogListDto } from "../dtos/blog-dtos.js";
+import { redis } from "../lib/redis.js";
+import { supabase } from "../lib/supabase.js";
+import { ApiError, AssetUtils, PaginationUtils } from "../utils/index.js";
 import {
   createBlogSchema,
   updateBlogSchema,
 } from "../validation/blog-validations.js";
-import { ApiError, PaginationUtils, AssetUtils } from "@heykyy/utils-backend";
-import { BlogDto, BlogListDto } from "../dtos/blog-dtos.js";
-import { supabase } from "../lib/supabase.js";
-import { redis } from "../lib/redis.js";
 import { convert } from "html-to-text";
-import axios from "axios";
-import slugify from "slugify";
+import { validate } from "../validation/validation.js";
+import { DEFAULT_CACHE_TTL } from "@heykyy/constant";
 
 /**
  * Service class for managing blog operations.
@@ -42,6 +43,7 @@ class BlogService {
    * Splits text into manageable chunks for TTS processing.
    * @private
    * @param {string} text - The input text.
+   * @param {number} [maxLength=1500] - Maximum length of each chunk.
    * @returns {string[]}
    */
   #splitText(text, maxLength = 1500) {
@@ -554,7 +556,9 @@ class BlogService {
       metadata: PaginationUtils.generateMetadata(total, page, take),
     };
 
-    await redis.set(cacheKey, JSON.stringify(result), { ex: 86400 });
+    await redis.set(cacheKey, JSON.stringify(result), {
+      ex: DEFAULT_CACHE_TTL,
+    });
     return result;
   }
 

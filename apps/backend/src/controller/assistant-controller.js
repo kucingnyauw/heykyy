@@ -1,4 +1,4 @@
-import { AsyncHandler, CommonUtils } from "@heykyy/utils-backend";
+import { AsyncHandler , IpUtils } from "../utils/index.js";
 import AssistantService from "../service/assistant-service.js";
 
 /**
@@ -13,9 +13,9 @@ class AssistantController {
    * @param {import("express").Response} res - Express response for chat delivery.
    */
   ask = AsyncHandler.catch(async (req, res) => {
-    const ip = CommonUtils.getClientIp(req);
+    const ip = IpUtils.getClientIp(req);
 
-    const identifier = CommonUtils.hashIp(ip);
+    const identifier = IpUtils.hashIp(ip);
 
     const response = await AssistantService.askAssistant(identifier, req.body);
 

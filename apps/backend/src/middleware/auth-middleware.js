@@ -1,7 +1,20 @@
+import { DEFAULT_CACHE_TTL } from "@heykyy/constant";
+
 import { getPrisma } from "../application/database.js";
-import { ApiError } from "@heykyy/utils-backend";
-import { supabase } from "../lib/supabase.js";
 import { redis } from "../lib/redis.js";
+import { supabase } from "../lib/supabase.js";
+import { ApiError } from "../utils/index.js";
+
+const USER_SELECT = {
+  id: true,
+  email: true,
+  name: true,
+  about: true,
+  role: true,
+  profilePhoto: { select: { url: true } },
+  createdAt: true,
+  updatedAt: true,
+};
 
 /**
  * Fetches user data from Supabase Auth service using the provided access token.
@@ -14,7 +27,6 @@ const getSupabaseUser = async (token) => {
     if (error || !data?.user) return null;
     return data.user;
   } catch (err) {
-    /** Silent catch to handle authentication service communication issues */
     return null;
   }
 };
@@ -37,35 +49,20 @@ const getCachedUser = async (email) => {
 
     const user = await getPrisma().user.findUnique({
       where: { email },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-
-        about: true,
-        role: true,
-        profilePhoto: { select: { url: true } },
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: USER_SELECT,
     });
 
     if (user) {
-      await redis.set(cacheKey, JSON.stringify(user), { ex: 3600 });
+      await redis.set(cacheKey, JSON.stringify(user), {
+        ex: DEFAULT_CACHE_TTL,
+      });
     }
 
     return user;
   } catch (err) {
-    /** Fallback mechanism: Query database directly if Redis service is unavailable */
     return await getPrisma().user.findUnique({
       where: { email },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-
-        role: true,
-      },
+      select: USER_SELECT,
     });
   }
 };
@@ -115,7 +112,6 @@ export const authMiddleware = async (req, res, next) => {
       return res.status(err.statusCode).json(err.toJSON());
     }
 
-    /** Generic response for unexpected server-side errors during authentication */
     return res.status(500).json({
       success: false,
       message: "An internal error occurred during the authentication process.",
@@ -152,7 +148,6 @@ export const optionalAuthMiddleware = async (req, res, next) => {
 
     next();
   } catch (err) {
-    /** Ensure any errors in optional authentication do not halt the request lifecycle */
     next();
   }
 };
